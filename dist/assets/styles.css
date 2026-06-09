@@ -256,7 +256,8 @@ h2 {
     #app.mobile-layout {
         display: flex;
         flex-direction: column;
-        padding: 5px;
+        padding: 4px;
+        /* Уменьшили общий отступ */
         height: 100vh;
         box-sizing: border-box;
     }
@@ -265,59 +266,69 @@ h2 {
         flex: 0 0 auto;
         display: flex;
         overflow-x: auto;
-        gap: 8px;
+        gap: 6px;
+        /* Уменьшили зазор между кнопками */
         white-space: nowrap;
-        padding: 8px !important;
+        padding: 4px !important;
+        /* Сделали верхнюю панель тоньше */
     }
 
     #canvas-container {
-        flex: 2;
+        flex: 3;
+        /* Увеличили долю холста, чтобы боковые окна визуально стали меньше */
         min-height: 0;
-        border-radius: 8px;
+        border-radius: 6px;
     }
 
     #sidebar-right {
-        flex: 1;
+        flex: 0.8;
+        /* Уменьшили пропорцию окна (меньше 1), теперь оно занимает минимум места */
         min-height: 0;
         overflow-y: auto;
         box-sizing: border-box;
-        padding: 12px !important;
+        padding: 8px !important;
+        /* Уменьшили внутренние отступы в два раза */
     }
 
     .menu-btn {
-        padding: 8px 14px !important;
-        font-size: 13px !important;
+        padding: 6px 10px !important;
+        /* Сделали кнопки меню меньше */
+        font-size: 12px !important;
+        /* Уменьшили текст */
         margin-bottom: 0 !important;
         display: inline-block;
     }
 
+    /* Компактные карточки товаров внутри окон */
+    .product-card.mobile-card {
+        flex-direction: column;
+        padding: 6px !important;
+        /* Максимально сжали карточку */
+        gap: 4px;
+        /* Уменьшили расстояние между элементами внутри */
+    }
+
+    .product-card.mobile-card h4 {
+        font-size: 12px !important;
+        /* Уменьшили заголовки */
+        margin: 0;
+    }
+
+    .card-actions,
+    .shop-buttons {
+        width: 100%;
+    }
+
+    /* Компактные модальные окна */
     .modal-content {
-        width: 95% !important;
-        padding: 15px !important;
-        margin: 5% auto !important;
+        width: 90% !important;
+        padding: 10px !important;
+        /* Уменьшили подложку модалки */
+        margin: 10% auto !important;
     }
 
     .modal-filter-bar div {
         flex-direction: column;
-        gap: 8px;
-    }
-
-    .product-card.mobile-card {
-        flex-direction: column;
-        padding: 10px !important;
-        gap: 8px;
-    }
-
-    .product-card.mobile-card h4 {
-        font-size: 14px !important;
-    }
-
-    .card-actions {
-        flex-direction: column;
-        width: 100%;
-    }
-
-    .shop-buttons {
-        width: 100%;
+        gap: 4px;
     }
 }
