@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PC Builder AI 3D</title>
+    <link rel="stylesheet" href="../src/styles.css">
+</head>
+
+<body>
+    <div id="app">
+        <aside id="sidebar-left">
+            <h2>Компоненты</h2>
+            <button class="menu-btn" data-category="cpu">Процессор</button>
+            <button class="menu-btn" data-category="video_card">Видеокарта</button>
+            <button class="menu-btn" data-category="motherboard">Материнская плата</button>
+            <button class="menu-btn" data-category="ram">Оперативная память</button>
+            <button class="menu-btn" data-category="storage">Накопитель</button>
+            <button class="menu-btn" data-category="power_supply">Блок питания</button>
+            <button class="menu-btn" data-category="case">Корпус</button>
+            <button class="menu-btn" data-category="cpu_cooler">Кулер для процессора</button>
+            <button class="menu-btn" data-category="case_fans">Корпусные вентиляторы</button>
+        </aside>
+
+        <main id="canvas-container"></main>
+
+        <aside id="sidebar-right">
+            <h2>ИИ Эксперт</h2>
+            <div id="ai-status">Ожидание сборки...</div>
+            <div id="total-price">Итого: 0 руб.</div>
+        </aside>
+    </div>
+
+    <div id="modal" class="hidden">
+        <div class="modal-content">
+            <span id="close-modal">&times;</span>
+            <h3 id="modal-title">Выберите деталь</h3>
+
+            <div class="modal-filter-bar"
+                style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; padding: 10px; background: #1a1a1e; border-radius: 8px;">
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="search-input" placeholder="Поиск по названию..."
+                        style="flex: 2; padding: 10px; background: #121214; border: 1px solid #333; color: #fff; border-radius: 6px;">
+
+                    <div id="dynamic-filter-container" style="flex: 1;"></div>
+                </div>
+
+                <div
+                    style="display: flex; align-items: center; gap: 15px; font-size: 13px; color: #aaa; margin-top: 5px;">
+                    <span>Цена до:</span>
+                    <input type="range" id="price-slider" min="0" max="300000" step="1000" value="300000"
+                        style="flex: 1; accent-color: #00ff88;">
+                    <span id="price-slider-value"
+                        style="color: #00ff88; font-weight: bold; min-width: 70px; text-align: right;">300 000 ₽</span>
+                </div>
+            </div>
+
+            <div id="products-list"></div>
+        </div>
+    </div>
+
+    <script src="bundle.js"></script>
+</body>
+
+</html>
