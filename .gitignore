@@ -24,12 +24,6 @@ pids
 *.seed
 *.pid.lock
 
-# Внутренний генератор базы данных на Python (черновики и исходники списков)
-_database_generator/
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
 .pytest_cache/
 
 # Системные файлы операционных систем (мусор)
