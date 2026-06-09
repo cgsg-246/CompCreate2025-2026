@@ -251,3 +251,69 @@ h2 {
 ::-webkit-scrollbar-thumb:hover {
     background: var(--accent-blue);
 }
+
+@media (max-width: 768px) {
+    #app.mobile-layout {
+        display: flex;
+        flex-direction: column;
+        padding: 5px;
+    }
+
+    #sidebar-left,
+    #sidebar-right {
+        width: 100% !important;
+        box-sizing: border-box;
+        margin-bottom: 10px;
+        padding: 12px !important;
+    }
+
+    #sidebar-left {
+        display: flex;
+        overflow-x: auto;
+        gap: 8px;
+        white-space: nowrap;
+        padding-bottom: 5px;
+    }
+
+    .menu-btn {
+        padding: 8px 14px !important;
+        font-size: 13px !important;
+        margin-bottom: 0 !important;
+        display: inline-block;
+    }
+
+    #canvas-container {
+        height: 40vh !important;
+        border-radius: 8px;
+    }
+
+    .modal-content {
+        width: 95% !important;
+        padding: 15px !important;
+        margin: 5% auto !important;
+    }
+
+    .modal-filter-bar div {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .product-card.mobile-card {
+        flex-direction: column;
+        padding: 10px !important;
+        gap: 8px;
+    }
+
+    .product-card.mobile-card h4 {
+        font-size: 14px !important;
+    }
+
+    .card-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .shop-buttons {
+        width: 100%;
+    }
+}

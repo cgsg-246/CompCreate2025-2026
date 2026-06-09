@@ -1,28 +1,55 @@
+// Интервал обновления цен
 const FIVE_MINUTES = 5 * 60 * 1000;
+
+// Кеш для хранения цен в памяти
 const priceCache = {};
+
+// Локальная копия загруженной базы данных
 let currentDB = {};
 
+// Текущая открытая категория
 let activeCategoryKey = "";
+
+// Список товаров в открытой модалке
 let activeItemsList = [];
 
-// Объект-корзина для хранения полной сборки пользователя
+// Флаг: зашел ли пользователь с телефона
+let isMobileUser = false;
+
+// Объект-корзина для хранения всей сборки (запоминает несколько деталей сразу)
 const activeBuild = {
-    cpu: null, gpu: null, motherboard: null, ram: null, storage: null,
-    psu: null, case: null, cooler: null, case_fans: null
+    cpu: null,
+    gpu: null,
+    motherboard: null,
+    ram: null,
+    storage: null,
+    psu: null,
+    case: null,
+    cooler: null,
+    case_fans: null
 };
 
-// Карта связи дата-атрибутов кнопок с ключами JSON
+// Маппинг дата-атрибутов HTML-кнопок меню на ключи нашего JSON
 const categoryMapping = {
-    "cpu": "cpu", "video_card": "gpu", "motherboard": "motherboard", "ram": "ram",
-    "storage": "storage", "power_supply": "psu", "case": "case",
-    "cpu_cooler": "cooler", "case_fans": "case_fans"
+    "cpu": "cpu",
+    "video_card": "gpu",
+    "motherboard": "motherboard",
+    "ram": "ram",
+    "storage": "storage",
+    "power_supply": "psu",
+    "case": "case",
+    "cpu_cooler": "cooler",
+    "case_fans": "case_fans"
 };
 
 /**
- * Инициализация UI и привязка событий
+ * ИНИЦИАЛИЗАЦИЯ ИНТЕРФЕЙСА
+ * Вызывается из main.js, принимает готовую базу данных
  */
 export function initUI(database) {
     currentDB = database;
+
+    checkDeviceType();
 
     const menuButtons = document.querySelectorAll('.menu-btn');
     const modal = document.getElementById('modal');
@@ -47,23 +74,41 @@ export function initUI(database) {
         });
     }
 
-    // Слушатели базовых фильтров (Поиск и Цены)
     const searchInput = document.getElementById('search-input');
     const priceSlider = document.getElementById('price-slider');
 
     if (searchInput) searchInput.addEventListener('input', applyFiltersAndRender);
     if (priceSlider) {
         priceSlider.addEventListener('input', (e) => {
-            document.getElementById('price-slider-value').innerText = parseInt(e.target.value).toLocaleString() + " ₽";
+            const valSpan = document.getElementById('price-slider-value');
+            if (valSpan) valSpan.innerText = parseInt(e.target.value).toLocaleString() + " ₽";
             applyFiltersAndRender();
         });
     }
+
+    window.addEventListener('resize', checkDeviceType);
 
     updateSidebarUI();
 }
 
 /**
- * Динамическая генерация фильтров под конкретную категорию
+ * ОТСЛЕЖИВАНИЕ ТЕЛЕФОНА И АДАПТАЦИЯ ИНТЕРФЕЙСА
+ */
+function checkDeviceType() {
+    isMobileUser = window.innerWidth <= 768 || /Android|iPhone|iPad/i.test(navigator.userAgent);
+
+    const appContainer = document.getElementById('app');
+    if (!appContainer) return;
+
+    if (isMobileUser) {
+        appContainer.classList.add('mobile-layout');
+    } else {
+        appContainer.classList.remove('mobile-layout');
+    }
+}
+
+/**
+ * ГЕНЕРАЦИЯ УНИКАЛЬНЫХ ФИЛЬТРОВ ПОД КАЖДУЮ КАТЕГОРИЮ ЖЕЛЕЗА
  */
 function renderDynamicFilters(categoryKey) {
     const container = document.getElementById('dynamic-filter-container');
@@ -127,7 +172,7 @@ function renderDynamicFilters(categoryKey) {
 }
 
 /**
- * Открытие окна и сброс состояния фильтрации
+ * ОТКРЫТИЕ ОКНА И СБРОС ФИЛЬТРОВ
  */
 async function openComponentsModal(title, categoryKey) {
     const modal = document.getElementById('modal');
@@ -140,7 +185,8 @@ async function openComponentsModal(title, categoryKey) {
     if (searchInput) searchInput.value = "";
     if (priceSlider) {
         priceSlider.value = 300000;
-        document.getElementById('price-slider-value').innerText = "300 000 ₽";
+        const valSpan = document.getElementById('price-slider-value');
+        if (valSpan) valSpan.innerText = "300 000 ₽";
     }
 
     if (modalTitle) modalTitle.innerText = title;
@@ -150,11 +196,12 @@ async function openComponentsModal(title, categoryKey) {
     activeItemsList = currentDB[categoryKey] || [];
 
     renderDynamicFilters(categoryKey);
+
     applyFiltersAndRender();
 }
 
 /**
- * Применение фильтров и рендеринг карточек
+ * ФУНКЦИЯ ЖИВОГО ПОИСКА И ТРОЙНОЙ ФИЛЬТРАЦИИ ДАННЫХ
  */
 function applyFiltersAndRender() {
     const productsList = document.getElementById('products-list');
@@ -172,6 +219,7 @@ function applyFiltersAndRender() {
 
     const filteredItems = activeItemsList.filter(item => {
         const matchesSearch = item.name.toLowerCase().includes(query);
+
         const itemPrice = priceCache[item.name]?.price || 0;
         const matchesPrice = itemPrice <= maxPrice;
 
@@ -199,7 +247,8 @@ function applyFiltersAndRender() {
 
     filteredItems.forEach(item => {
         const card = document.createElement('div');
-        card.className = 'product-card';
+        card.className = isMobileUser ? 'product-card mobile-card' : 'product-card';
+
         card.innerHTML = `
             <div class="card-info">
                 <h4>${item.name}</h4>
