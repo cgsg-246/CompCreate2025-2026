@@ -3,20 +3,29 @@ const API_BASE_URL = `http://${SERVER_IP}:5000`;
 
 export async function analyzeBuildWithAI(currentBuild) {
     const prompt = `
-    Проанализируй следующую конфигурацию компьютера:
-    - Процессор: ${currentBuild.cpu ? currentBuild.cpu.name : "Не выбран"}
-    - Видеокарта: ${currentBuild.video_card ? currentBuild.video_card.name : "Не выбрана"}
-    - Материнская плата: ${currentBuild.motherboard ? currentBuild.motherboard.name : "Не выбрана"}
-    - Блок питания: ${currentBuild.power_supply ? currentBuild.power_supply.name : "Не выбран"}
+    Проанализируй следующую конфигурацию компьютера из 9 компонентов:
+    - Процессор (CPU): ${currentBuild.cpu ? currentBuild.cpu.name : "Не выбран"}
+    - Материнская плата (Motherboard): ${currentBuild.motherboard ? currentBuild.motherboard.name : "Не выбрана"}
+    - Кулер процессора (Cooler): ${currentBuild.cooler ? currentBuild.cooler.name : "Не выбран"}
+    - Видеокарта (GPU): ${currentBuild.gpu ? currentBuild.gpu.name : "Не выбрана"}
+    - Оперативная память (RAM): ${currentBuild.ram ? currentBuild.ram.name : "Не выбрана"}
+    - Накопитель (Storage): ${currentBuild.storage ? currentBuild.storage.name : "Не выбран"}
+    - Блок питания (PSU): ${currentBuild.power ? currentBuild.power.name : "Не выбран"}
+    - Корпус (Case): ${currentBuild.case ? currentBuild.case.name : "Не выбран"}
+    - Корпусные вентиляторы (Fans): ${currentBuild.case_fans ? currentBuild.case_fans.name : "Не выбраны"}
 
-    Задачи: Выяви критические ошибки совместимости. Оцени приблизительный FPS в играх Cyberpunk 2077, CS2, DOTA2 (в разрешении 1080p).
-    Ответь СТРОГО в формате JSON без какого-либо лишнего текста до или после объекта:
+    Задачи: 
+    1. Проверить совместимость сокетов CPU и Motherboard (если выбраны).
+    2. Проверить, хватает ли ватт БП (PSU) под выбранные CPU и GPU.
+    3. Оцени приблизительный FPS в играх Cyberpunk 2077, CS2, DOTA2 (в разрешении 1080p).
+    
+    Ответь СТРОГО в формате JSON без какого-либо лишнего текста до или после объекта. Не пиши "Вот ваш JSON" или Markdown-разметку \`\`\`json. Только чистый объект:
     {
-      "compatibility_errors": ["список ошибок или строка 'Нет ошибок'"],
-      "perf_cyberpunk": "значение FPS (например, 60+)",
-      "perf_cs2": "значение FPS (например, 140+)",
-      "perf_dota2": "значение FPS (например, 140+)",
-      "verdict": "вывод на русском языке (1-2 предложения)"
+      "compatibility_errors": ["список ошибок через запятую или пустой массив если всё хорошо"],
+      "perf_cyberpunk": "значение FPS (например, 60+ FPS)",
+      "perf_cs2": "значение FPS (например, 240+ FPS)",
+      "perf_dota2": "значение FPS (например, 180+ FPS)",
+      "verdict": "короткий инженерный вывод на русском языке (1-2 предложения)"
     }
     `;
 
@@ -45,20 +54,16 @@ export async function analyzeBuildWithAI(currentBuild) {
 
         const cleanJsonText = aiRawText.slice(jsonStart, jsonEnd);
 
-        try {
-            return JSON.parse(cleanJsonText);
-        } catch (parseError) {
-            console.error("Ошибка парсинга JSON из ответа ИИ:", cleanJsonText);
-            throw new Error('Не удалось распарсить структуру JSON от ИИ');
-        }
+        return JSON.parse(cleanJsonText);
 
-    } catch (error) {
-        console.error("Ошибка при запросе к бэкенду:", error);
+    } catch (e) {
+        console.error("Ошибка ИИ-анализатора на фронтенде:", e);
         return {
-            compatibility_errors: ["Не удалось получить анализ от ИИ"],
+            compatibility_errors: ["Не удалось связаться с сервером ИИ"],
             perf_cyberpunk: "—",
             perf_cs2: "—",
-            verdict: "Произошла ошибка при обработке данных ИИ. Проверьте, запущен ли бэкенд на порту 5000."
+            perf_dota2: "—",
+            verdict: "Ошибка сети или неверный токен в файле .env бэкенда."
         };
     }
 }

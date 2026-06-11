@@ -7,87 +7,80 @@ const loader = new GLTFLoader();
 
 const loadedComponents = {
     case: null,
-    cpu: null,
-    gpu: null,
     motherboard: null,
-    power: null
+    cpu: null,
+    cooler: null,
+    ram: null,
+    gpu: null,
+    storage: null,
+    power: null,
+    case_fans: null
 };
-
 
 export function init3DScene() {
     const container = document.getElementById('canvas-container');
     if (!container) return;
 
-    // Ñîçäàåì 3D-ñöåíó
     scene = new THREE.Scene();
 
-    // Íàñòðàèâàåì ïåðñïåêòèâíóþ êàìåðó
     camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
-    camera.position.set(3, 2, 4); // Ïîçèöèÿ êàìåðû: ñáîêó, ñïåðåäè è ñâåðõó îò êîðïóñà
+    camera.position.set(3, 2, 4); // Ð˜Ð´ÐµÐ°Ð»ÑŒÐ½Ñ‹Ð¹ Ñ€Ð°ÐºÑƒÑ€Ñ Ñ‚Ñ€Ð¸ Ñ‡ÐµÑ‚Ð²ÐµÑ€Ñ‚Ð¸
 
-    // Íàñòðàèâàåì ðåíäåðåð ñãëàæèâàíèÿ WebGL
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Çàùèòà îò ïèêñåëåé íà Retina-ýêðàíàõ
-    renderer.shadowMap.enabled = true; // Âêëþ÷àåì ïðîñ÷åò òåíåé
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
     container.appendChild(renderer.domElement);
 
-    // Äîáàâëÿåì èíòåðàêòèâíîå óïðàâëåíèå ñöåíîé ñ ïîìîùüþ ìûøè
     controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true; // Ïëàâíîå ñêîëüæåíèå ïðè âðàùåíèè
+    controls.enableDamping = true;
     controls.dampingFactor = 0.05;
-    controls.maxDistance = 8;      // Îãðàíè÷åíèå îòäàëåíèÿ êàìåðû
-    controls.minDistance = 1.8;    // Îãðàíè÷åíèå ïðèáëèæåíèÿ êàìåðû
+    controls.maxDistance = 8;
+    controls.minDistance = 1.5;
 
-    // ÍÀÑÒÐÎÉÊÀ ÍÅÎÍÎÂÎÃÎ ÈÃÐÎÂÎÃÎ ÎÑÂÅÙÅÍÈß
-    const ambientLight = new THREE.AmbientLight(0x0f1126, 1.5); // Ãëóáîêèé òåìíî-ñèíèé çàïîëíÿþùèé ñâåò
+    // ÐÐ•ÐžÐÐžÐ’Ð«Ð™ ÐšÐ˜Ð‘Ð•Ð ÐŸÐÐÐš Ð¡Ð’Ð•Ð¢
+    const ambientLight = new THREE.AmbientLight(0x0f1126, 1.5);
     scene.add(ambientLight);
 
-    const blueLight = new THREE.PointLight(0x00d2ff, 8, 15); // Ãîëóáîé íåîí ñïðàâà
+    const blueLight = new THREE.PointLight(0x00d2ff, 8, 15); // Ð‘Ð¸Ñ€ÑŽÐ·Ð¾Ð²Ñ‹Ð¹
     blueLight.position.set(3, 3, 2);
     scene.add(blueLight);
 
-    const violetLight = new THREE.PointLight(0x9d4edd, 8, 15); // Ôèîëåòîâûé íåîí ñëåâà
+    const violetLight = new THREE.PointLight(0x9d4edd, 8, 15); // Ð¤Ð¸Ð¾Ð»ÐµÑ‚Ð¾Ð²Ñ‹Ð¹
     violetLight.position.set(-3, 1, 2);
     scene.add(violetLight);
 
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1); // Áåëûé çàïîëíÿþùèé ñâåò ñâåðõó äëÿ ïðîÿâëåíèÿ òåêñòóð
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1);
     dirLight.position.set(0, 5, 0);
     dirLight.castShadow = true;
     scene.add(dirLight);
 
-    // ÇÀÃÐÓÆÀÅÌ ÊÎÐÏÓÑ ÏÊ ÏÎ ÓÌÎË×ÀÍÈÞ
-    // Åñëè ôàéëà case.glb â ïàïêå íåò, ñîçäàåòñÿ êðàñèâûé ñòåêëÿííûé êóá-çàãëóøêà
     loadPCComponent('case', 'assets/models/case.glb', new THREE.Vector3(0, 0, 0), () => {
-        const caseGeo = new THREE.BoxGeometry(1.2, 1.6, 1.6);
+        const caseGeo = new THREE.BoxGeometry(1.4, 1.8, 1.8);
         const caseMat = new THREE.MeshPhysicalMaterial({
-            color: 0x121432, transparent: true, opacity: 0.2, roughness: 0.1, transmission: 0.9, thickness: 0.5
+            color: 0x121432, transparent: true, opacity: 0.15, roughness: 0.1, transmission: 0.9, thickness: 0.5
         });
         const fallbackCase = new THREE.Mesh(caseGeo, caseMat);
         scene.add(fallbackCase);
         loadedComponents.case = fallbackCase;
     });
 
-    // ÈÃÐÎÂÎÉ ÖÈÊË ÎÁÍÎÂËÅÍÈß ÊÀÄÐÎÂ (ÀÍÈÌÀÖÈß)
     function animate() {
         requestAnimationFrame(animate);
-        
-        // Ìåäëåííî è ïëàâíî âðàùàåì êîðïóñ êîìïüþòåðà âîêðóã îñè Y
+
         if (loadedComponents.case) loadedComponents.case.rotation.y += 0.002;
-        
-        // Âðàùàåì âñå îñòàëüíûå äåòàëè ñèíõðîííî ñ êîðïóñîì ÏÊ
+
         Object.keys(loadedComponents).forEach(key => {
             if (key !== 'case' && loadedComponents[key]) {
                 loadedComponents[key].rotation.y += 0.002;
             }
         });
 
-        controls.update(); // Îáíîâëÿåì ïîëîæåíèå êàìåðû íà îñíîâå ìûøè
-        renderer.render(scene, camera); // Ïåðåðèñîâûâàåì 3D-êàäð
+        controls.update();
+        renderer.render(scene, camera);
     }
     animate();
 
-    // ÑËÓØÀÒÅËÜ ÐÅÇÀÉÇÀ: Ïîäñòðàèâàåì 3D ïîä ðàçìåðû ýêðàíà ïðè èçìåíåíèè îêíà
     window.addEventListener('resize', () => {
         camera.aspect = container.clientWidth / container.clientHeight;
         camera.updateProjectionMatrix();
@@ -95,101 +88,111 @@ export function init3DScene() {
     });
 }
 
-/**
- * 2. ÂÍÓÒÐÅÍÍßß ÔÓÍÊÖÈß ÄËß ÓÏÐÀÂËÅÍÈß ÏÀÌßÒÜÞ È ÇÀÃÐÓÇÊÎÉ ÌÎÄÅËÅÉ
- */
-function loadPCComponent(category, modelPath, position, fallbackCreator) {
-    
-    // ÍÀÄÅÆÍÀß Î×ÈÑÒÊÀ ÏÀÌßÒÈ: Åñëè äåòàëü ýòîé êàòåãîðèè óæå áûëà íà ñöåíå — ïîëíîñòüþ óíè÷òîæàåì å¸ [INDEX]
-    if (loadedComponents[category]) {
-        scene.remove(loadedComponents[category]); // Ñòèðàåì âèçóàëüíî ñî ñöåíû [INDEX]
 
-        // Âûãðóæàåì ãåîìåòðèþ è ìàòåðèàëû èç âèäåîïàìÿòè (VRAM), ÷òîáû ñàéò íå ëàãàë [INDEX]
+function loadPCComponent(category, modelPath, position, fallbackCreator) {
+    if (loadedComponents[category]) {
+        scene.remove(loadedComponents[category]);
+
         loadedComponents[category].traverse((child) => {
             if (child.isMesh) {
-                child.geometry.dispose(); // Óäàëÿåì ïîëèãîíû èç ïàìÿòè [INDEX]
+                child.geometry.dispose();
                 if (Array.isArray(child.material)) {
                     child.material.forEach(mat => mat.dispose());
                 } else {
-                    child.material.dispose(); // Óäàëÿåì òåêñòóðû è ìàòåðèàëû [INDEX]
+                    child.material.dispose();
                 }
             }
         });
-        loadedComponents[category] = null; // Ïîëíîñòüþ çàáûâàåì ññûëêó â JS [INDEX]
+        loadedComponents[category] = null;
     }
 
-    // Çàïóñêàåì àñèíõðîííûé çàãðóç÷èê 3D-ôàéëîâ [INDEX]
     loader.load(
         modelPath,
         (gltf) => {
             const model = gltf.scene;
             model.position.copy(position);
-            
-            // Çàñòàâëÿåì âñå ìåøè âíóòðè ìîäåëè îòáðàñûâàòü è ïðèíèìàòü òåíè [INDEX]
             model.traverse((child) => {
                 if (child.isMesh) {
                     child.castShadow = true;
                     child.receiveShadow = true;
                 }
             });
-
             scene.add(model);
-            loadedComponents[category] = model; // Ñîõðàíÿåì ññûëêó íà íîâóþ ìîäåëü
+            loadedComponents[category] = model;
         },
         null,
-        (error) => {
-            // Åñëè .glb ôàéë ïî êàêîé-òî ïðè÷èíå íå ñêà÷àëñÿ/íå íàéäåí — âêëþ÷àåì JS-çàãëóøêó [INDEX]
-            console.warn(`3D ôàéë ${modelPath} îòñóòñòâóåò. Âêëþ÷àåì íåîíîâóþ çàãëóøêó.`);
+        () => {
+            // Ð•ÑÐ»Ð¸ Ñ„Ð°Ð¹Ð»Ð° .glb Ð½ÐµÑ‚ â€” Ð·Ð°Ð¿ÑƒÑÐºÐ°ÐµÐ¼ ÐºÐ°ÑÑ‚Ð¾Ð¼Ð½ÑƒÑŽ Ð·Ð°Ð³Ð»ÑƒÑˆÐºÑƒ
             fallbackCreator();
         }
     );
 }
 
-
+/**
+ * 2. Ð“Ð›ÐÐ’ÐÐÐ¯ Ð’ÐÐ•Ð¨ÐÐ¯Ð¯ Ð¤Ð£ÐÐšÐ¦Ð˜Ð¯ Ð”Ð›Ð¯ Ð’Ð«Ð—ÐžÐ’Ð ÐžÐ¢Ð Ð˜Ð¡ÐžÐ’ÐšÐ˜ Ð’Ð¡Ð•Ð¥ 9 Ð”Ð•Ð¢ÐÐ›Ð•Ð™
+ */
 export function addComponentTo3D(category, modelName = 'default') {
-    // Àâòîìàòè÷åñêè ñòðîèì ïóòü ê ôàéëó íà îñíîâå èìåíè äåòàëè
     const modelFile = `assets/models/${modelName}.glb`;
-    
+
     let position = new THREE.Vector3(0, 0, 0);
     let fallbackSize = [0.1, 0.1, 0.1];
     let fallbackColor = 0x9d4edd;
 
-    // Ðàññ÷èòûâàåì êîîðäèíàòû ðàçìåùåíèÿ äåòàëåé âíóòðè ñèñòåìíîãî áëîêà
+    // Ð¢ÐžÐ§ÐÐÐ¯ Ð ÐÐ¡Ð¡Ð¢ÐÐÐžÐ’ÐšÐ Ð˜ Ð“Ð•ÐžÐœÐ•Ð¢Ð Ð˜Ð¯ Ð”Ð›Ð¯ Ð’Ð¡Ð•Ð¥ 9 Ð§ÐÐ¡Ð¢Ð•Ð™ ÐŸÐš
     if (category === 'motherboard') {
         position.set(-0.3, 0.1, 0);
-        fallbackSize = [0.05, 1.1, 1.1];
-        fallbackColor = 0x181a3a; // Òåìíî-òåêñòîëèòîâûé öâåò äëÿ ïëàòû
+        fallbackSize = [0.05, 1.2, 1.2]; // Ð¢Ð¾Ð½ÐºÐ¸Ð¹ Ð±Ð¾Ð»ÑŒÑˆÐ¾Ð¹ Ñ‚ÐµÐºÑÑ‚Ð¾Ð»Ð¸Ñ‚
+        fallbackColor = 0x0d1124;
     }
-    if (category === 'cpu') {
+    else if (category === 'cpu') {
         position.set(-0.27, 0.3, 0.1);
-        fallbackSize = [0.15, 0.15, 0.03];
-        // Èíòåë ïîäñâåòèì ãîëóáûì, ÀÌÄ — îðàíæåâûì [INDEX]
-        fallbackColor = modelName.includes('amd') ? 0xff4500 : 0x00d2ff; 
+        fallbackSize = [0.15, 0.15, 0.03]; // ÐœÐ°Ð»ÐµÐ½ÑŒÐºÐ¸Ð¹ Ð¿Ð»Ð¾ÑÐºÐ¸Ð¹ ÐºÐ²Ð°Ð´Ñ€Ð°Ñ‚
+        fallbackColor = modelName.includes('amd') ? 0xff5500 : 0x00d2ff;
     }
-    if (category === 'gpu') {
-        position.set(0, 0.1, 0.1);
-        // Åñëè âèäåîêàðòà ìîùíàÿ (òðåõêóëåðíàÿ) — äåëàåì áëîê äëèííåå [INDEX]
-        fallbackSize = modelName === 'gpu_triple_fan' ? [1.1, 0.25, 0.25] : [0.8, 0.25, 0.25];
-        fallbackColor = 0xff007f; // Ðîçîâûé íåîí äëÿ âèäåîêàðòû
+    else if (category === 'cooler') {
+        position.set(-0.1, 0.3, 0.2);
+        fallbackSize = [0.35, 0.4, 0.4]; // ÐœÐ°ÑÑÐ¸Ð²Ð½Ñ‹Ð¹ Ð¿Ñ€Ð¾Ñ†ÐµÑÑÐ¾Ñ€Ð½Ñ‹Ð¹ ÐºÑƒÐ»ÐµÑ€/Ð±Ð°ÑˆÐ½Ñ
+        fallbackColor = 0x4cc9f0;
     }
-    if (category === 'power') {
-        position.set(-0.1, -0.5, 0);
-        fallbackSize = [0.45, 0.45, 0.45];
-        fallbackColor = 0x222222; // Ìàòîâî-÷åðíûé áëîê ïèòàíèÿ
+    else if (category === 'ram') {
+        position.set(-0.1, 0.3, 0.4);
+        fallbackSize = [0.03, 0.3, 0.4]; // Ð’Ñ‹ÑÐ¾ÐºÐ¸Ðµ ÑƒÐ·ÐºÐ¸Ðµ Ð¿Ð»Ð°ÑˆÐºÐ¸ Ð¾Ð¿ÐµÑ€Ð°Ñ‚Ð¸Ð²Ð½Ð¾Ð¹ Ð¿Ð°Ð¼ÑÑ‚Ð¸
+        fallbackColor = 0x7209b7;
+    }
+    else if (category === 'gpu') {
+        position.set(0, 0.0, 0.1);
+        fallbackSize = modelName === 'gpu_triple_fan' ? [1.1, 0.25, 0.25] : [0.8, 0.25, 0.25]; // Ð”Ð»Ð¸Ð½Ð½Ð°Ñ Ð²Ð¸Ð´ÐµÐ¾ÐºÐ°Ñ€Ñ‚Ð°
+        fallbackColor = 0xf72585; // ÐÐ°ÑÑ‹Ñ‰ÐµÐ½Ð½Ñ‹Ð¹ Ñ€Ð¾Ð·Ð¾Ð²Ñ‹Ð¹ Ð½ÐµÐ¾Ð½
+    }
+    else if (category === 'storage') {
+        position.set(-0.1, -0.1, 0.4);
+        fallbackSize = [0.03, 0.1, 0.25]; // ÐšÐ¾Ð¼Ð¿Ð°ÐºÑ‚Ð½Ñ‹Ð¹ SSD Ñ„Ð¾Ñ€Ð¼Ð°Ñ‚Ð° M.2
+        fallbackColor = 0x3a0ca3;
+    }
+    else if (category === 'psu') {
+        position.set(-0.1, -0.6, 0);
+        fallbackSize = [0.5, 0.5, 0.5]; // ÐšÑƒÐ±Ð¸Ñ‡ÐµÑÐºÐ¸Ð¹ Ð±Ð»Ð¾Ðº Ð¿Ð¸Ñ‚Ð°Ð½Ð¸Ñ Ð²Ð½Ð¸Ð·Ñƒ ÐºÐ¾Ñ€Ð¿ÑƒÑÐ°
+        fallbackColor = 0x222222;
+    }
+    else if (category === 'case_fans') {
+        position.set(0.5, 0.2, 0);
+        fallbackSize = [0.1, 0.4, 0.4]; // Ð’ÐµÐ½Ñ‚Ð¸Ð»ÑÑ‚Ð¾Ñ€Ñ‹ Ð½Ð° Ð¿ÐµÑ€ÐµÐ´Ð½ÐµÐ¹ Ð¿Ð°Ð½ÐµÐ»Ð¸ ÐºÐ¾Ñ€Ð¿ÑƒÑÐ°
+        fallbackColor = 0x00f5d4; // Ð¯Ñ€ÐºÐ¸Ð¹ Ð±Ð¸Ñ€ÑŽÐ·Ð¾Ð²Ñ‹Ð¹ Ð½ÐµÐ¾Ð½
     }
 
+    // Ð—Ð°Ð¿ÑƒÑÐºÐ°ÐµÐ¼ Ð¿Ñ€Ð¾Ñ†ÐµÑÑ ÑÐ¾Ð·Ð´Ð°Ð½Ð¸Ñ/Ð·Ð°Ð³Ñ€ÑƒÐ·ÐºÐ¸
     loadPCComponent(category, modelFile, position, () => {
         const geo = new THREE.BoxGeometry(...fallbackSize);
         const mat = new THREE.MeshStandardMaterial({
             color: fallbackColor,
             emissive: fallbackColor,
-            emissiveIntensity: 0.4, 
+            emissiveIntensity: 0.4,
             roughness: 0.2
         });
         const mesh = new THREE.Mesh(geo, mat);
         mesh.position.copy(position);
-        
+
         scene.add(mesh);
-        loadedComponents[category] = mesh; 
+        loadedComponents[category] = mesh;
     });
 }
