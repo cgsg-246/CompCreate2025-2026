@@ -5,8 +5,8 @@ import fs from 'fs';
 import path from 'path';
 
 dotenv.config();
-const app = express();
 
+const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
@@ -27,26 +27,27 @@ async function getLocalDatabase() {
 
 app.get('/api/products', async (req, res) => {
     const { category, query } = req.query;
-    const products = await getLocalDatabase();
+    const db = await getLocalDatabase();
 
-    if (!products) {
-        return res.status(404).json({ error: 'База данных отсутствует в server/data/database.json' });
+    if (!db) {
+        return res.status(404).json({ error: 'База данных отсутствует в server/data/database.json. Запустите Python-скрипт.' });
     }
 
-    let filtered = products;
-    if (category) filtered = filtered.filter(p => p.type === category);
+    let filtered = db[category] || [];
 
     if (query && query.trim() !== '') {
         const searchStr = query.toLowerCase();
         filtered = filtered.filter(p => p.name.toLowerCase().includes(searchStr));
     } else {
-        filtered = filtered.filter(p => p.popular);
+        filtered = filtered.slice(0, 8);
     }
+
     res.json(filtered);
 });
 
 app.post('/api/analyze', async (req, res) => {
     const { prompt } = req.body;
+
     if (!prompt) return res.status(400).json({ error: 'Промпт пуст.' });
     if (!process.env.HF_TOKEN) return res.status(500).json({ error: 'Нет токена HF_TOKEN на сервере.' });
 
@@ -60,28 +61,43 @@ app.post('/api/analyze', async (req, res) => {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                model: "tgi",
-                messages: [
-                    { role: "system", content: "Ты — эксперт по сборке компьютеров. Проанализируй конфигурацию комплектующих и ответь строго в формате JSON." },
-                    { role: "user", content: prompt }
-                ],
-                parameters: { max_new_tokens: 500, temperature: 0.3 }
+                inputs: prompt,
+                parameters: {
+                    max_new_tokens: 500,
+                    temperature: 0.1,
+                    return_full_text: false
+                }
             })
         });
 
         if (!response.ok) {
-            const errData = await response.json();
-            return res.status(response.status).json({ error: errData.error || 'Ошибка ИИ' });
+            const errText = await response.text();
+            console.error("HF Error Text:", errText);
+            return res.status(response.status).json({ error: `Ошибка API Hugging Face: ${response.status}` });
         }
 
         const result = await response.json();
-        let aiRawText = result.choices?.[0]?.message?.content || result.generated_text;
 
-        res.json({ generated_text: aiRawText || "Ошибка генерации текста." });
+        let aiRawText = "";
+        if (Array.isArray(result) && result[0]) {
+            aiRawText = result[0].generated_text;
+        } else if (result.generated_text) {
+            aiRawText = result.generated_text;
+        }
+
+        res.json({ generated_text: aiRawText || "{}" });
+
     } catch (error) {
         console.error("AI Error:", error);
-        res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+        res.status(500).json({ error: 'Внутренняя ошибка сервера при работе с нейросетью' });
     }
 });
 
-app.listen(PORT, '0.0.0.0', () => console.log(`🔥 Сервер бэкенда запущен на порту ${PORT}`));
+
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`\n==================================================`);
+    console.log(`Сервер бэкенда успешно запущен!`);
+    console.log(`Локальный адрес API: http://localhost:${PORT}`);
+    console.log(`Ожидаемый файл БД: ${DATABASE_PATH}`);
+    console.log(`==================================================\n`);
+});
