@@ -1,26 +1,29 @@
 {
   "name": "compcreate",
   "version": "1.0.0",
-  "description": "",
-  "license": "ISC",
-  "author": "",
-  "type": "commonjs",
-  "main": "index.js",
+  "type": "module",
+  "main": "server/index.mjs",
   "scripts": {
-    "dev": "rollup -c -w",
     "build": "rollup -c",
-    "server": "node server/index.mjs", 
-    "generate-db": "python _database_generator/generator.py",
-    "parse-prices": "node parser.js"
+    "dev": "rollup -c -w",
+    "parse": "node parser.js",
+    "server": "node server/index.mjs"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^29.0.3",
+    "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-json": "^6.1.0",
-    "@rollup/plugin-node-resolve": "^16.0.3",
-    "@rollup/plugin-terser": "^1.0.0",
-    "rollup": "^4.61.1",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "axios": "^1.6.8",
+    "cheerio": "^1.0.0-rc.12",
+    "rollup": "^4.14.1",
     "rollup-plugin-livereload": "^2.0.5",
-    "rollup-plugin-serve": "^3.0.0",
-    "three": "^0.184.0"
+    "rollup-plugin-serve": "^1.1.0",
+    "three": "^0.163.0"
   }
 }
