@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "rollup -c -w",
     "build": "rollup -c",
-    "start": "node server/index.js",
+    "server": "node server/index.mjs", 
     "generate-db": "python _database_generator/generator.py",
     "parse-prices": "node parser.js"
   },
