@@ -5,39 +5,39 @@ import json from '@rollup/plugin-json';
 import commonjs from '@rollup/plugin-commonjs';
 import terser from '@rollup/plugin-terser';
 
-// ЖЕСТКАЯ ПРОВЕРКА: Если мы на хостинге (production), то watch принудительно отключается
-const isProduction = process.env.NODE_ENV === 'production' || !process.env.ROLLUP_WATCH;
-const isWatch = !isProduction;
+const isWatch = process.env.ROLLUP_WATCH;
 
 export default {
     input: 'src/main.js',
     output: {
         file: 'dist/bundle.js',
-        format: 'iife',        
-        sourcemap: isWatch // Карты кода включаем только для локальной разработки    
+        format: 'iife',        // Р¤РѕСЂРјР°С‚ В«СЃР°РјРѕРІС‹Р·С‹РІР°СЋС‰РµР№СЃСЏ С„СѓРЅРєС†РёРёВ» вЂ” РёРґРµР°Р»РµРЅ РґР»СЏ Р±СЂР°СѓР·РµСЂР°
+        sourcemap: true,
+        // РЈР”РђР›РЇР•Рњ РѕС‚СЃСЋРґР° Р»СЋР±С‹Рµ СѓРїРѕРјРёРЅР°РЅРёСЏ globals Рё РІРЅРµС€РЅРёС… РјРѕРґСѓР»РµР№!
     },
     plugins: [
+        // nodeResolve РѕР±СЏР·Р°РЅ РёРґС‚Рё СЃР°РјС‹Рј РїРµСЂРІС‹Рј РІ РјР°СЃСЃРёРІРµ РїР»Р°РіРёРЅРѕРІ!
         nodeResolve({
             browser: true,
-            preferBuiltins: false 
+            preferBuiltins: false
         }),
+
+        // commonjs РёРґРµС‚ СЃС‚СЂРѕРіРѕ РІС‚РѕСЂС‹Рј, РѕРЅ РїРѕРґСЂСѓР¶РёС‚ РјРѕРґСѓР»Рё Three.js СЃРѕ СЃР±РѕСЂС‰РёРєРѕРј
         commonjs(),
+
         json(),
 
-        // Локальный сервер запустится ТОЛЬКО на твоем ПК в режиме разработки
         isWatch && serve({
             contentBase: 'dist',
             port: 3000,
             open: true
         }),
 
-        // Автообновление сработает ТОЛЬКО на твоем ПК
         isWatch && livereload({
             watch: 'dist',
             delay: 300
         }),
 
-        // В облаке код гарантированно сожмется и процесс сборки закроется (exit 0)
-        isProduction && terser()
+        !isWatch && terser()
     ].filter(Boolean)
 };

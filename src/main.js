@@ -1,8 +1,9 @@
+import * as THREE from 'three';
 import { initUI } from './ui.js';
 import { init3DScene, addComponentTo3D } from './scened3d.js';
 import { analyzeBuildWithAI } from './ai.js';
 
-console.log("Rollup работает! Three.js успешно подключен:", THREE.REVISION);
+window.THREE = THREE;
 
 const currentBuild = {
     case: null,
