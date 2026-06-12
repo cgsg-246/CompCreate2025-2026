@@ -122,7 +122,7 @@ for category, items_list in raw_data.items():
             
         final_database[category].append(product)
 
-output_path = os.path.join("server", "data", "database.json")
+output_path = os.path.join("dist", "assets", "database.json")
 os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
 with open(output_path, "w", encoding="utf-8") as f:

@@ -11,16 +11,21 @@ async function startApp() {
     try {
         init3DScene();
 
-        const response = await fetch('http://localhost:5000/api/products');
-        if (!response.ok) throw new Error('Не удалось загрузить базу данных комплектующих');
+        const response = await fetch('./assets/database.json');
+        
+        if (!response.ok) throw new Error('Файл базы данных не найден в облаке Vercel');
         const hardwareDatabase = await response.json();
 
+        console.log("✅ База данных успешно загружена напрямую из файла!");
+
         initUI(hardwareDatabase, handleProductSelection, handleProductDeletion);
-        console.log("Конструктор успешно запущен!");
+
+        console.log("Конструктор успешно запущен в облаке!");
     } catch (e) {
         console.error("Ошибка старта приложения:", e);
     }
 }
+
 
 async function handleProductSelection(categoryKey, product) {
     currentBuild[categoryKey] = product;
