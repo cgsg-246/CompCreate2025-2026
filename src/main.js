@@ -1,31 +1,21 @@
-import * as THREE from 'three';
-import { initUI } from './ui.js';
+import { initUI, renderSelectedComponents } from './ui.js';
 import { init3DScene, addComponentTo3D } from './scened3d.js';
 import { analyzeBuildWithAI } from './ai.js';
 
-window.THREE = THREE;
-
 const currentBuild = {
-    case: null,
-    motherboard: null,
-    cpu: null,
-    cooler: null,
-    ram: null,
-    gpu: null,
-    storage: null,
-    power: null,
-    case_fans: null
+    case: null, motherboard: null, cpu: null, cooler: null,
+    ram: null, gpu: null, storage: null, power: null, case_fans: null
 };
 
 async function startApp() {
     try {
         init3DScene();
 
-        const response = await fetch('./assets/database.json');
+        const response = await fetch('http://localhost:5000/api/products');
+        if (!response.ok) throw new Error('Не удалось загрузить базу данных комплектующих');
         const hardwareDatabase = await response.json();
 
-        initUI(hardwareDatabase, handleProductSelection);
-
+        initUI(hardwareDatabase, handleProductSelection, handleProductDeletion);
         console.log("Конструктор успешно запущен!");
     } catch (e) {
         console.error("Ошибка старта приложения:", e);
@@ -35,13 +25,26 @@ async function startApp() {
 async function handleProductSelection(categoryKey, product) {
     currentBuild[categoryKey] = product;
 
-    const btn = document.querySelector(`.menu-btn[data-category="${categoryKey}"]`);
-    if (btn) btn.innerText = product.name.slice(0, 18) + '...';
+    addComponentTo3D(categoryKey, product.sketchfabId);
 
-    addComponentTo3D(categoryKey, product.modelName);
+    renderSelectedComponents(currentBuild);
 
+    updateTotalPriceAndAI();
+}
+
+function handleProductDeletion(categoryKey) {
+    currentBuild[categoryKey] = null;
+
+    addComponentTo3D(categoryKey, "bbb6fd2b16614f319a65af99a4338d77");
+
+    renderSelectedComponents(currentBuild);
+
+    updateTotalPriceAndAI();
+}
+
+async function updateTotalPriceAndAI() {
     const total = Object.values(currentBuild).reduce((sum, item) => {
-        return sum + (item ? (item.price || 0) : 0);
+        return sum + (item ? (item.price_approx || 0) : 0);
     }, 0);
 
     const priceDisplay = document.getElementById('total-price');
@@ -51,7 +54,7 @@ async function handleProductSelection(categoryKey, product) {
 
     const aiBox = document.getElementById('ai-status');
     if (aiBox) {
-        aiBox.innerHTML = '<div style="color: var(--accent-blue)">🤖 ИИ проверяет совместимость 9 компонентов...</div>';
+        aiBox.innerHTML = '<div style="color: var(--accent-blue)">🤖 ИИ пересчитывает параметры совместимости и FPS...</div>';
     }
 
     const aiRes = await analyzeBuildWithAI(currentBuild);
@@ -61,12 +64,13 @@ async function handleProductSelection(categoryKey, product) {
             <p><strong>Вердикт ИИ:</strong> ${aiRes.verdict || 'Компоненты успешно состыкованы.'}</p>
             <p style="margin-top: 10px;">🎮 Cyberpunk 2077: <span style="color: var(--accent-blue)">${aiRes.perf_cyberpunk || '—'}</span></p>
             <p>🎮 CS2: <span style="color: var(--accent-blue)">${aiRes.perf_cs2 || '—'}</span></p>
+            <p>🎮 DOTA 2: <span style="color: var(--accent-blue)">${aiRes.perf_dota2 || '—'}</span></p>
         `;
 
         if (aiRes.compatibility_errors && aiRes.compatibility_errors.length > 0) {
             aiBox.innerHTML += `
                 <div style="color: var(--accent-pink); margin-top: 12px; padding-top: 8px; border-top: 1px dashed var(--accent-pink);">
-                    ⚠️ Ошибки сборки: <br>${aiRes.compatibility_errors.join('<br>')}
+                    Ошибки сборки: <br>${aiRes.compatibility_errors.join('<br>')}
                 </div>
             `;
         }
@@ -74,4 +78,3 @@ async function handleProductSelection(categoryKey, product) {
 }
 
 startApp();
-

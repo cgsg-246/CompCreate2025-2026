@@ -257,7 +257,6 @@ h2 {
         display: flex;
         flex-direction: column;
         padding: 4px;
-        /* Уменьшили общий отступ */
         height: 100vh;
         box-sizing: border-box;
     }
@@ -267,50 +266,39 @@ h2 {
         display: flex;
         overflow-x: auto;
         gap: 6px;
-        /* Уменьшили зазор между кнопками */
         white-space: nowrap;
         padding: 4px !important;
-        /* Сделали верхнюю панель тоньше */
     }
 
     #canvas-container {
         flex: 3;
-        /* Увеличили долю холста, чтобы боковые окна визуально стали меньше */
         min-height: 0;
         border-radius: 6px;
     }
 
     #sidebar-right {
         flex: 0.8;
-        /* Уменьшили пропорцию окна (меньше 1), теперь оно занимает минимум места */
         min-height: 0;
         overflow-y: auto;
         box-sizing: border-box;
         padding: 8px !important;
-        /* Уменьшили внутренние отступы в два раза */
     }
 
     .menu-btn {
         padding: 6px 10px !important;
-        /* Сделали кнопки меню меньше */
         font-size: 12px !important;
-        /* Уменьшили текст */
         margin-bottom: 0 !important;
         display: inline-block;
     }
 
-    /* Компактные карточки товаров внутри окон */
     .product-card.mobile-card {
         flex-direction: column;
         padding: 6px !important;
-        /* Максимально сжали карточку */
         gap: 4px;
-        /* Уменьшили расстояние между элементами внутри */
     }
 
     .product-card.mobile-card h4 {
         font-size: 12px !important;
-        /* Уменьшили заголовки */
         margin: 0;
     }
 
@@ -319,11 +307,9 @@ h2 {
         width: 100%;
     }
 
-    /* Компактные модальные окна */
     .modal-content {
         width: 90% !important;
         padding: 10px !important;
-        /* Уменьшили подложку модалки */
         margin: 10% auto !important;
     }
 

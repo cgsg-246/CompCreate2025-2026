@@ -4,8 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PC Builder AI 3D</title>
-    <link rel="stylesheet" href="./assets/styles.css">
+    <title>3D PC Builder AI</title>
+    <link rel="stylesheet" href="styles.css">
+
+    <script defer type="text/javascript" src="https://sketchfab.com"></script>
 </head>
 
 <body>
@@ -13,23 +15,36 @@
         <aside id="sidebar-left">
             <h2>Компоненты</h2>
             <button class="menu-btn" data-category="cpu">Процессор</button>
-            <button class="menu-btn" data-category="video_card">Видеокарта</button>
             <button class="menu-btn" data-category="motherboard">Материнская плата</button>
+            <button class="menu-btn" data-category="cooler">Кулер</button>
             <button class="menu-btn" data-category="ram">Оперативная память</button>
+            <button class="menu-btn" data-category="gpu">Видеокарта</button>
             <button class="menu-btn" data-category="storage">Накопитель</button>
-            <button class="menu-btn" data-category="power_supply">Блок питания</button>
+            <button class="menu-btn" data-category="psu">Блок питания</button>
             <button class="menu-btn" data-category="case">Корпус</button>
-            <button class="menu-btn" data-category="cpu_cooler">Кулер для процессора</button>
-            <button class="menu-btn" data-category="case_fans">Корпусные вентиляторы</button>
+            <button class="menu-btn" data-category="case_fans">Вентиляторы</button>
         </aside>
 
-        <main id="canvas-container"></main>
+        <main id="canvas-container">
+            <iframe id="sketchfab-viewer" width="100%" height="100%" src="https://sketchfab.com"
+                title="PC Builder 3D Viewer" frameborder="0" allowfullscreen
+                allow="autoplay; fullscreen; xr-spatial-tracking" style="border: none; width: 100%; height: 100%;">
+            </iframe>
+        </main>
 
         <aside id="sidebar-right">
+            <h2>Твоя Сборка</h2>
+            <div id="selected-components-list"
+                style="display: flex; flex-direction: column; gap: 10px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; max-height: 250px; overflow-y: auto;">
+                <p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 10px;">Нет выбранных
+                    деталей</p>
+            </div>
+
             <h2>ИИ Эксперт</h2>
-            <div id="ai-status">Ожидание сборки...</div>
-            <div id="total-price">Итого: 0 руб.</div>
+            <div id="ai-status">Выберите компоненты для начала анализа сборки...</div>
+            <div id="total-price">Итого: 0 ₽</div>
         </aside>
+
     </div>
 
     <div id="modal" class="hidden">
@@ -37,28 +52,30 @@
             <span id="close-modal">&times;</span>
             <h3 id="modal-title">Выберите деталь</h3>
 
-            <div class="modal-filter-bar"
-                style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; padding: 10px; background: #1a1a1e; border-radius: 8px;">
-                <div style="display: flex; gap: 10px;">
-                    <input type="text" id="search-input" placeholder="Поиск по названию..."
-                        style="flex: 2; padding: 10px; background: #121214; border: 1px solid #333; color: #fff; border-radius: 6px;">
+            <div class="filter-bar"
+                style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                <input type="text" id="search-input" placeholder="Поиск по названию..."
+                    style="flex: 1; min-width: 180px; padding: 10px; background: #0a0b1e; border: 1px solid var(--accent-violet); color: white; border-radius: 6px; outline: none;">
 
-                    <div id="dynamic-filter-container" style="flex: 1;"></div>
-                </div>
+                <select id="sort-select"
+                    style="padding: 10px; background: #0a0b1e; border: 1px solid var(--accent-violet); color: white; border-radius: 6px; outline: none; cursor: pointer;">
+                    <option value="default">Сортировка по умолчанию</option>
+                    <option value="price_asc">Сначала дешевые ↑</option>
+                    <option value="price_desc">Сначала дорогие ↓</option>
+                </select>
 
-                <div
-                    style="display: flex; align-items: center; gap: 15px; font-size: 13px; color: #aaa; margin-top: 5px;">
-                    <span>Цена до:</span>
-                    <input type="range" id="price-slider" min="0" max="300000" step="1000" value="300000"
-                        style="flex: 1; accent-color: #00ff88;">
-                    <span id="price-slider-value"
-                        style="color: #00ff88; font-weight: bold; min-width: 70px; text-align: right;">300 000 ₽</span>
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 150px;">
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">Макс. цена: <b id="price-slider-value"
+                            style="color: var(--accent-blue);">300 000 ₽</b></span>
+                    <input type="range" id="price-slider" min="1000" max="300000" step="500" value="300000"
+                        style="cursor: pointer; accent-color: var(--accent-blue);">
                 </div>
             </div>
 
             <div id="products-list"></div>
         </div>
     </div>
+
 
     <script src="bundle.js"></script>
 </body>
