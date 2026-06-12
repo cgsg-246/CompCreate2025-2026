@@ -1,15 +1,3 @@
-:root {
-    --bg-main: #0a0b1e;
-    --bg-panel: rgba(18, 20, 50, 0.6);
-    --accent-blue: #00d2ff;
-    --accent-violet: #9d4edd;
-    --accent-pink: #ff007f;
-    --text-main: #f0f3ff;
-    --text-muted: #7a82b8;
-    --border-glow: rgba(157, 78, 221, 0.3);
-    --font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-}
-
 * {
     box-sizing: border-box;
     margin: 0;
@@ -17,113 +5,136 @@
 }
 
 body {
-    background-color: var(--bg-main);
-    color: var(--text-main);
-    font-family: var(--font-family);
-    height: 100vh;
-    overflow: hidden;
+    background-color: #0a0b1e;
+    /* Глубокий темно-синий */
+    color: #f0f3ff;
+    /* Светлый геймерский текст */
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+    overflow-y: auto;
+    /* Разрешаем скролл всей страницы */
 }
 
 #app {
     display: grid;
     grid-template-columns: 300px 1fr 350px;
-    height: 100vh;
+    /* 3 колонки: Меню - 3D - ИИ */
+    min-height: 100vh;
     width: 100vw;
 }
 
+/* Общие стили для боковых панелей (эффект темного стекла) */
 aside {
-    background: var(--bg-panel);
+    background: rgba(18, 20, 50, 0.6);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
-    padding: 25px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    z-index: 10;
+    gap: 15px;
     box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.03);
 }
 
-#sidebar-right {
-    border-right: none;
-    border-left: 1px solid rgba(255, 255, 255, 0.05);
-}
-
+/* Центральный 3D-стенд */
 #canvas-container {
     width: 100%;
-    height: 100%;
+    min-height: 400px;
     position: relative;
-    background: radial-gradient(circle at center, #ffffff 0%, #0a0b1e 100%);
+    background: radial-gradient(circle at center, #16193b 0%, #0a0b1e 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
+/* Неоновые заголовки */
 h2 {
-    font-size: 1.4rem;
+    font-size: 1.2rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 2px;
-    color: var(--text-main);
-    border-bottom: 2px solid var(--accent-violet);
-    padding-bottom: 10px;
-    margin-bottom: 10px;
+    border-bottom: 2px solid #9d4edd;
+    /* Фиолетовая полоса */
+    padding-bottom: 8px;
+    margin-bottom: 5px;
     text-shadow: 0 0 10px rgba(157, 78, 221, 0.5);
 }
 
 .menu-btn {
     background: rgba(157, 78, 221, 0.1);
-    color: var(--text-main);
-    border: 1px solid var(--accent-violet);
-    padding: 15px 20px;
-    font-size: 1rem;
-    font-weight: 500;
+    color: #f0f3ff;
+    border: 1px solid #9d4edd;
+    padding: 12px 15px;
+    font-size: 0.95rem;
     border-radius: 8px;
     cursor: pointer;
     text-align: left;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
 .menu-btn:hover {
-    background: rgba(157, 78, 221, 0.3);
-    box-shadow: 0 0 15px var(--border-glow);
-    border-color: var(--accent-blue);
-    transform: translateX(5px);
+    background: rgba(157, 78, 221, 0.25);
+    border-color: #00d2ff;
+    /* Смена на голубой при наведении */
+    box-shadow: 0 0 15px rgba(157, 78, 221, 0.3);
 }
 
 .menu-btn::after {
     content: '→';
-    color: var(--accent-blue);
-    font-weight: bold;
-    transition: transform 0.3s ease;
+    color: #00d2ff;
 }
 
-.menu-btn:hover::after {
-    transform: translateX(3px);
+#selected-components-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    border-radius: 8px;
+    max-height: 280px;
+    overflow-y: auto;
+    border: 1px solid rgba(255, 255, 255, 0.02);
 }
 
 #ai-status {
-    flex-grow: 1;
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 8px;
     padding: 15px;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     line-height: 1.5;
-    color: var(--text-muted);
+    flex-grow: 1;
     overflow-y: auto;
+    color: #7a82b8;
 }
 
 #total-price {
-    font-size: 1.6rem;
+    font-size: 1.4rem;
     font-weight: bold;
-    color: var(--accent-blue);
+    color: #00d2ff;
+    /* Голубой неон */
     text-align: center;
-    padding: 15px;
-    background: rgba(0, 210, 255, 0.05);
-    border: 1px dashed var(--accent-blue);
+    padding: 12px;
+    background: rgba(0, 210, 255, 0.03);
+    border: 1px dashed #00d2ff;
     border-radius: 8px;
     text-shadow: 0 0 10px rgba(0, 210, 255, 0.4);
+}
+
+/* Ссылки на магазины */
+.shop-link {
+    font-size: 0.8rem;
+    color: #7a82b8;
+    text-decoration: none;
+    border-bottom: 1px dashed #7a82b8;
+}
+
+.shop-link:hover {
+    color: #00d2ff;
+    border-color: #00d2ff;
 }
 
 #modal {
@@ -132,189 +143,171 @@ h2 {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(5, 6, 15, 0.8);
-    backdrop-filter: blur(8px);
+    background: rgba(5, 6, 15, 0.85);
+    backdrop-filter: blur(6px);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 100;
-    opacity: 1;
-    transition: opacity 0.3s ease;
 }
 
 #modal.hidden {
-    opacity: 0;
-    pointer-events: none;
+    display: none;
 }
 
 .modal-content {
     background: #121432;
-    border: 2px solid var(--accent-violet);
+    border: 2px solid #9d4edd;
     box-shadow: 0 0 40px rgba(157, 78, 221, 0.4);
-    width: 600px;
-    max-width: 90%;
-    max-height: 80vh;
+    width: 650px;
+    max-width: 95%;
+    max-height: 85vh;
     border-radius: 12px;
-    padding: 30px;
+    padding: 25px;
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
 }
 
 #close-modal {
     position: absolute;
-    top: 15px;
-    right: 20px;
-    font-size: 2rem;
-    color: var(--text-muted);
+    top: 10px;
+    right: 15px;
+    font-size: 1.8rem;
+    color: #7a82b8;
     cursor: pointer;
-    transition: color 0.2s ease;
 }
 
 #close-modal:hover {
-    color: var(--accent-pink);
+    color: #ff007f;
+    /* Розовый неон */
 }
 
 #products-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
     overflow-y: auto;
-    padding-right: 5px;
+    flex-grow: 1;
 }
 
+/* Карточки в каталоге */
 .product-card {
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 8px;
-    padding: 15px;
+    padding: 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: all 0.2s ease;
+    gap: 10px;
 }
 
-.product-card:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: var(--accent-violet);
-}
-
-.product-info h4 {
-    font-size: 1.1rem;
-    margin-bottom: 5px;
-}
-
-.product-info p {
-    font-size: 0.85rem;
-    color: var(--text-muted);
+.product-card h4 {
+    font-size: 1rem;
+    font-weight: 500;
 }
 
 .product-actions {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 8px;
+    gap: 4px;
 }
 
 .product-price {
     font-weight: bold;
-    color: var(--accent-blue);
-    font-size: 1.2rem;
+    color: #00d2ff;
+    font-size: 1.15rem;
 }
 
-.shop-link {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    text-decoration: none;
-    border-bottom: 1px dashed var(--text-muted);
-}
-
-.shop-link:hover {
-    color: var(--accent-blue);
-    border-color: var(--accent-blue);
-}
-
-::-webkit-scrollbar {
-    width: 6px;
-}
-
-::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.1);
-}
-
-::-webkit-scrollbar-thumb {
-    background: var(--accent-violet);
+.select-btn {
+    padding: 6px 12px;
+    background: #9d4edd;
+    border: none;
+    color: white;
     border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: var(--accent-blue);
+.select-btn:hover {
+    background: #7209b7;
 }
 
-@media (max-width: 768px) {
-    #app.mobile-layout {
-        display: flex;
-        flex-direction: column;
-        padding: 4px;
-        height: 100vh;
-        box-sizing: border-box;
-    }
+/* Тег сокета */
+.socket-tag {
+    background: #9d4edd;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-top: 4px;
+    display: inline-block;
+}
 
-    #sidebar-left {
-        flex: 0 0 auto;
-        display: flex;
-        overflow-x: auto;
-        gap: 6px;
-        white-space: nowrap;
-        padding: 4px !important;
-    }
-
-    #canvas-container {
-        flex: 3;
-        min-height: 0;
-        border-radius: 6px;
-    }
-
-    #sidebar-right {
-        flex: 0.8;
-        min-height: 0;
+@media (max-width: 968px) {
+    #app {
+        /* НА ТЕЛЕФОНАХ: Все панели превращаются в одну колонку и встают друг под друга */
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+        height: auto;
         overflow-y: auto;
-        box-sizing: border-box;
-        padding: 8px !important;
+    }
+
+    aside {
+        backdrop-filter: none;
+        background: #0e102e;
+        box-shadow: none;
+        height: auto;
+        padding: 15px;
+    }
+
+    /* Кнопки меню слева выстраиваются в аккуратную плитку-сетку */
+    #sidebar-left {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 10px;
     }
 
     .menu-btn {
-        padding: 6px 10px !important;
-        font-size: 12px !important;
-        margin-bottom: 0 !important;
-        display: inline-block;
+        padding: 10px 12px;
+        font-size: 0.85rem;
+        justify-content: center;
+        text-align: center;
     }
 
-    .product-card.mobile-card {
-        flex-direction: column;
-        padding: 6px !important;
-        gap: 4px;
+    .menu-btn::after {
+        display: none;
+        /* Убираем стрелочки, на смартфонах они не нужны */
     }
 
-    .product-card.mobile-card h4 {
-        font-size: 12px !important;
-        margin: 0;
-    }
-
-    .card-actions,
-    .shop-buttons {
-        width: 100%;
+    #canvas-container {
+        min-height: 220px;
+        height: 30vh;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .modal-content {
-        width: 90% !important;
-        padding: 10px !important;
-        margin: 10% auto !important;
+        width: 95%;
+        padding: 15px;
+        max-height: 90vh;
     }
 
-    .modal-filter-bar div {
-        flex-direction: column;
-        gap: 4px;
+    .filter-bar {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
     }
+}
+
+::-webkit-scrollbar {
+    width: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #9d4edd;
+    border-radius: 4px;
 }

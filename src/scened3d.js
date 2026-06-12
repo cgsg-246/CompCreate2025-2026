@@ -1,57 +1,47 @@
-window.apiInstance = null;
-
+/**
+ * Инициализация сцены (Временно выводим текст-заглушку вместо iframe)
+ */
 export function init3DScene() {
-    const iframe = document.getElementById('sketchfab-viewer');
-    if (!iframe) return;
+    const container = document.getElementById('canvas-container');
+    if (!container) return;
 
-    if (!window.Sketchfab) {
-        console.warn("Библиотека Sketchfab еще догружается, перезапуск инициализации через 200мс...");
-
-        if (!window.sketchfabAttempts) window.sketchfabAttempts = 0;
-        window.sketchfabAttempts++;
-
-        if (window.sketchfabAttempts < 15) {
-            setTimeout(init3DScene, 200);
-        } else {
-            console.log("ℹВнешнее API Sketchfab задерживается. Плеер запущен в автономном режиме.");
-        }
-        return;
-    }
-
-    console.log("📦 Внешняя библиотека Sketchfab успешно найдена! Связываем код с плеером...");
-
-    const client = new window.Sketchfab(iframe);
-
-    client.init({
-        success: function onSuccess(api) {
-            api.start();
-            window.apiInstance = api;
-
-            api.addEventListener('viewerready', function () {
-                console.log('🛸 3D-плеер Sketchfab успешно подключен и готов к управлению!');
-            });
-        },
-        error: function onError() {
-            console.error('Критическая ошибка инициализации встроенного плеера Sketchfab. Проверьте сеть.');
-        }
-    });
+    // Очищаем контейнер от тега iframe
+    container.innerHTML = `
+        <div id="fallback-3d-text" style="text-align: center; font-size: 1.1rem; color: var(--accent-blue); text-shadow: 0 0 10px rgba(0, 210, 255, 0.3); padding: 20px;">
+            🖥️ Стенд виртуальной сборки ПК готов.<br>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">Выбирайте компоненты в меню слева</span>
+        </div>
+    `;
+    console.log("ℹ️ Sketchfab временно отключен. Включен режим адаптивного 2D/3D плейсхолдера.");
 }
 
+/**
+ * Динамическое обновление текста по центру при установке детали
+ */
 export function addComponentTo3D(categoryKey, sketchfabId) {
-    if (!window.apiInstance) {
-        console.warn("API Sketchfab еще не готово к переключению. Подождите полной загрузки плеера.");
+    const textEl = document.getElementById('fallback-3d-text');
+    if (!textEl) return;
+
+    const categoryNames = {
+        cpu: "Процессор", motherboard: "Материнская плата", cooler: "Кулер",
+        ram: "Оперативная память", gpu: "Видеокарта", storage: "Накопитель",
+        psu: "Блок питания", case: "Корпус", case_fans: "Вентиляторы"
+    };
+
+    // Если деталь сбросили (удалили крестиком)
+    if (sketchfabId === "bbb6fd2b16614f319a65af99a4338d77" || !sketchfabId) {
+        textEl.innerHTML = `
+            🖥️ Компонент извлечен из корпуса.<br>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">Сборка обновлена</span>
+        `;
         return;
     }
 
-    console.log(`🔄 Команда Sketchfab: Показать [${categoryKey}], ID модели: ${sketchfabId}`);
-
-    window.apiInstance.load(sketchfabId, {
-        autostart: 1,
-        preload: 1,
-        ui_controls: 0,
-        ui_infos: 0,
-        ui_watermark: 0,
-        ui_settings: 0,
-        ui_help: 0
-    });
+    // Выводим неоновый статус по центру экрана
+    textEl.innerHTML = `
+        <div style="animation: pulse 1.5s infinite alternate;">
+             Установлен компонент: <b style="color: var(--accent-pink);">${categoryNames[categoryKey]}</b><br>
+            <span style="font-size: 0.85rem; color: var(--text-main); opacity: 0.8;">Загружен виртуальный ID: ${sketchfabId}</span>
+        </div>
+    `;
 }
