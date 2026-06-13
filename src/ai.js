@@ -1,26 +1,51 @@
-const API_BASE_URL = '/api/analyze';
+const API_BASE_URL = '/api/analyze.mjs';
 
 export async function analyzeBuildWithAI(currentBuild) {
+
+    const requiredComponents = {
+        cpu: "Процессор",
+        gpu: "Видеокарта",
+        motherboard: "Материнская плата",
+        power: "Блок питания"
+    };
+
+    const missingItems = [];
+    Object.keys(requiredComponents).forEach(key => {
+        if (!currentBuild[key]) {
+            missingItems.push(requiredComponents[key]);
+        }
+    });
+
+    if (missingItems.length > 0) {
+        return {
+            compatibility_errors: [],
+            perf_cyberpunk: "—",
+            perf_cs2: "—",
+            perf_dota2: "—",
+            verdict: `Сборка еще не готова для анализа. Пожалуйста, установите: ${missingItems.join(', ')}.`
+        };
+    }
+
     const prompt = `
     Ты — инженер-сборщик ПК. Проанализируй конфигурацию:
-    - CPU: ${currentBuild.cpu ? currentBuild.cpu.name : "Не выбран"}
-    - Motherboard: ${currentBuild.motherboard ? currentBuild.motherboard.name : "Не выбрана"}
+    - CPU: ${currentBuild.cpu.name}
+    - Motherboard: ${currentBuild.motherboard.name}
     - Cooler: ${currentBuild.cooler ? currentBuild.cooler.name : "Не выбран"}
-    - GPU: ${currentBuild.gpu ? currentBuild.gpu.name : "Не выбрана"}
+    - GPU: ${currentBuild.gpu.name}
     - RAM: ${currentBuild.ram ? currentBuild.ram.name : "Не выбрана"}
     - Storage: ${currentBuild.storage ? currentBuild.storage.name : "Не выбран"}
-    - PSU: ${currentBuild.power ? currentBuild.power.name : "Не выбран"}
+    - PSU: ${currentBuild.power.name}
     - Case: ${currentBuild.case ? currentBuild.case.name : "Не выбран"}
     - Fans: ${currentBuild.case_fans ? currentBuild.case_fans.name : "Не выбраны"}
 
-    Задачи: Проверь совместимость сокетов CPU и Motherboard, и хватит ли ватт БП (PSU). Оцени FPS в Cyberpunk 2077, CS2, DOTA2 (1080p).
-    Ответь СТРОГО в формате JSON без markdown-тегов и без лишних слов вокруг:
+    Задачи: Проверить совместимость сокетов CPU и Motherboard, и хватит ли ватт БП (PSU). Оцени приблизительный FPS в играх Cyberpunk 2077, CS2, DOTA2 (в разрешении 1080p).
+    Ответь СТРОГО в формате JSON без каких-либо markdown-тегов (без \`\`\`json) и лишних слов вокруг:
     {
-      "compatibility_errors": ["список ошибок или пустой массив"],
-      "perf_cyberpunk": "FPS",
-      "perf_cs2": "FPS",
-      "perf_dota2": "FPS",
-      "verdict": "вывод на русском языке (1-2 sentences)"
+      "compatibility_errors": ["список ошибок или пустой массив если ошибок нет"],
+      "perf_cyberpunk": "значение FPS",
+      "perf_cs2": "значение FPS",
+      "perf_dota2": "значение FPS",
+      "verdict": "короткий инженерный вывод на русском языке (1-2 предложения)"
     }
     `;
 
@@ -52,7 +77,7 @@ export async function analyzeBuildWithAI(currentBuild) {
             perf_cyberpunk: "60+ FPS",
             perf_cs2: "200+ FPS",
             perf_dota2: "150+ FPS",
-            verdict: "Параметры сборки обрабатываются локальным модулем совместимости."
+            verdict: "Параметры сборки обрабатываются локальным модулем совместимости Vercel."
         };
     }
 }

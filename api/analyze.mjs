@@ -28,9 +28,6 @@ export default async function handler(req, res) {
         const API_URL = "https://huggingface.co";
 
         try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000);
-
             const response = await fetch(API_URL, {
                 method: "POST",
                 headers: {
@@ -40,11 +37,8 @@ export default async function handler(req, res) {
                 body: JSON.stringify({
                     inputs: prompt,
                     parameters: { max_new_tokens: 400, temperature: 0.1, return_full_text: false }
-                }),
-                signal: controller.signal
+                })
             });
-
-            clearTimeout(timeoutId);
 
             if (!response.ok) {
                 console.warn(`⚠️ Hugging Face ответил статусом ${response.status}. Включаем fallback.`);
@@ -61,7 +55,6 @@ export default async function handler(req, res) {
             }
 
             aiRawText = aiRawText.replace(/```json/g, "").replace(/```/g, "").trim();
-
             JSON.parse(aiRawText);
 
             return res.status(200).json({ generated_text: aiRawText });
