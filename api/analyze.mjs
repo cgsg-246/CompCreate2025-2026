@@ -45,7 +45,7 @@ export default async function handler(req, res) {
             });
 
             if (!response.ok) {
-                console.warn(`⚠️ Hugging Face загружен или вернул статус ${response.status}`);
+                console.warn(`Hugging Face загружен или вернул статус ${response.status}`);
                 return res.status(200).json({ generated_text: JSON.stringify(secureFallback) });
             }
 
