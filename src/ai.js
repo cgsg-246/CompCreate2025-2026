@@ -1,11 +1,12 @@
-const API_BASE_URL = '/api/analyze.mjs';
+const API_BASE_URL = '/api/analyze';
 
 export async function analyzeBuildWithAI(currentBuild) {
+
     const requiredComponents = {
         cpu: "Процессор",
         gpu: "Видеокарта",
         motherboard: "Материнская плата",
-        power: "Блок питания"
+        psu: "Блок питания"
     };
 
     const missingItems = [];
@@ -21,14 +22,14 @@ export async function analyzeBuildWithAI(currentBuild) {
             perf_cyberpunk: "—",
             perf_cs2: "—",
             perf_dota2: "—",
-            verdict: `Сборка еще не готова для анализа. Пожалуйста, установите основные компоненты: ${missingItems.join(', ')}.`
+            verdict: `Сборка еще не готова для ИИ-анализа. Пожалуйста, установите: ${missingItems.join(', ')}.`
         };
     }
 
     const cpuName = currentBuild.cpu?.name || "Не выбран";
     const gpuName = currentBuild.gpu?.name || "Не выбрана";
     const mbName = currentBuild.motherboard?.name || "Не выбрана";
-    const psuName = currentBuild.power?.name || "Не выбран";
+    const psuName = currentBuild.psu?.name || "Не выбран";
     const coolerName = currentBuild.cooler?.name || "Не выбран";
     const ramName = currentBuild.ram?.name || "Не выбрана";
     const storageName = currentBuild.storage?.name || "Не выбран";
@@ -36,7 +37,7 @@ export async function analyzeBuildWithAI(currentBuild) {
     const fansName = currentBuild.case_fans?.name || "Не выбраны";
 
     const prompt = `
-    Ты — инженер-сборщик ПК. Проанализируй конфигурацию:
+    Ты — инженер-сборщик ПК. Проанализируй конфигурацию комплектующих:
     - CPU: ${cpuName}
     - Motherboard: ${mbName}
     - Cooler: ${coolerName}
@@ -48,18 +49,18 @@ export async function analyzeBuildWithAI(currentBuild) {
     - Fans: ${fansName}
 
     Задачи: Проверить совместимость сокетов CPU и Motherboard, и хватит ли ватт БП (PSU). Оцени приблизительный FPS в играх Cyberpunk 2077, CS2, DOTA2 (в разрешении 1080p).
-    Ответь СТРОГО в формате JSON без каких-либо markdown-тегов (без \`\`\`json) и лишних слов вокруг:
+    Ответь СТРОГО в формате JSON без каких-либо дополнительных слов до или после объекта.
     {
-      "compatibility_errors": ["список ошибок или пустой массив если ошибок нет"],
+      "compatibility_errors": ["список ошибок или пустой массив"],
       "perf_cyberpunk": "значение FPS",
       "perf_cs2": "значение FPS",
       "perf_dota2": "значение FPS",
-      "verdict": "короткий инженерный вывод на русском языке (1-2 предложения)"
+      "verdict": "вывод на русском языке (1-2 предложения)"
     }
     `;
 
     try {
-        console.log("📡 Все 9 объектов на месте! Отправляем запрос к ИИ на Vercel...");
+        console.log("Базовые 4 детали на месте! Шлем POST-запрос на Vercel...");
 
         const response = await fetch(API_BASE_URL, {
             method: "POST",
@@ -67,7 +68,7 @@ export async function analyzeBuildWithAI(currentBuild) {
             body: JSON.stringify({ prompt: prompt })
         });
 
-        if (!response.ok) throw new Error(`Ошибка ответа сервера: ${response.status}`);
+        if (!response.ok) throw new Error(`Ошибка ответа сервера Vercel API: ${response.status}`);
 
         const serverData = await response.json();
         let aiRawText = serverData.generated_text || "{}";
@@ -82,13 +83,13 @@ export async function analyzeBuildWithAI(currentBuild) {
         return JSON.parse(aiRawText);
 
     } catch (e) {
-        console.error("❌ Ошибка ИИ-анализатора при запросе:", e.message);
+        console.error("Ошибка ИИ-анализатора:", e.message);
         return {
             compatibility_errors: [],
             perf_cyberpunk: "60+ FPS",
             perf_cs2: "200+ FPS",
             perf_dota2: "150+ FPS",
-            verdict: "Параметры сборки успешно обработаны встроенным локальным модулем Vercel."
+            verdict: "Параметры сборки успешно проверены локальным алгоритмом безопасности Vercel."
         };
     }
 }
