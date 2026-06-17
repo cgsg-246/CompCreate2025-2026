@@ -1,30 +1,33 @@
-CompCreate:
-
-pc-builder-3d/
-├── .env                     # Секретные ключи (Токен ИИ, Порт сервера)
-├── .gitignore               # Список файлов, которые не полетят на GitHub (.env, node_modules)
-├── package.json             # Главный манифест Node.js (скрипты запуска, зависимости)
-├── parser.js                # Node.js скрипт для автоматического сбора реальных товаров с сайтов
-├── rollup.config.js         # Конфигурация сборщика Rollup для фронтенда
-│
-├── dist/                    # Готовый сайт (Браузер видит эту папку)
-│   ├── index.html           # Главная HTML страница приложения
-│   ├── bundle.js            # Весь JS код, автоматически склеенный Rollup
-│   ├── bundle.js.map        # Файл карты кода (для удобного поиска ошибок в консоли)
-│   └── assets/              # Статические медиа-файлы приложения 
-│       ├── database.json    # Реальная база данных товаров, созданная парсером 
-│       └── models/          # Папка для будущих 3D-моделей (.gltf / .glb)
-│
-├── server/                  # Node.js + Express
-│   └── index.js             # Код сервера (поиск товаров, безопасные запросы к ИИ)
-│
-└── src/                     # Исходный модульный JS код
-    ├── main.js              # Главный файл (управляет логикой и связывает всё воедино)
-    ├── styles.css           # Фиолетово-синие неоновые стили интерфейса
-    ├── scene3d.js           # 3D-графика (Three.js: сцена, свет, камера, отрисовка деталей)
-    ├── ui.js                # Интерфейс (клики, открытие модалок, поиск, вывод карточек)
-    └── ai.js                # Фронтенд-модуль для связи с бэкенд-сервером ИИ
-
+COMPCREATE/
+├── .vscode/
+├── api/
+│   └── analyze.mjs         
+├── components/             
+├── dist/                   
+├── docks/                  
+├── node_modules/
+├── server/
+│   ├── data/
+│   │   └── users.json      
+│   ├── auth.js             
+│   └── index.mjs           
+├── src/
+│   ├── apiClient.js        
+│   ├── auth.js           
+│   ├── ai.js               
+│   ├── filters.js         
+│   ├── main.js          
+│   ├── scene3d.js          
+│   ├── styles.css         
+│   └── ui.js             
+├── .env                   
+├── .gitignore
+├── generator.py
+├── package-lock.json
+├── package.json            
+├── parser.js
+├── README.md
+└── rollup.config.mjs
 
 ------------------------------
 ## Архитектура и стек проекта

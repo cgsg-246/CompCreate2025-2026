@@ -311,3 +311,249 @@ h2 {
     background: #9d4edd;
     border-radius: 4px;
 }
+
+/* =============================================
+   МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ
+   ============================================= */
+#auth-modal {
+    display: none;
+    /* скрыто по умолчанию, показываем через JS */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(5, 6, 15, 0.85);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+    /* выше основной модалки */
+    animation: authFadeIn 0.3s ease;
+}
+
+#auth-modal.show {
+    display: flex;
+}
+
+#auth-modal .modal-content {
+    background: #121432;
+    border: 2px solid #9d4edd;
+    box-shadow: 0 0 40px rgba(157, 78, 221, 0.4);
+    width: 400px;
+    max-width: 92%;
+    padding: 30px 25px;
+    border-radius: 12px;
+    position: relative;
+    color: #f0f3ff;
+    animation: authSlideIn 0.3s ease;
+}
+
+/* Крестик закрытия */
+#auth-modal .close-auth-btn {
+    position: absolute;
+    top: 12px;
+    right: 18px;
+    font-size: 28px;
+    color: #7a82b8;
+    cursor: pointer;
+    transition: color 0.2s;
+    line-height: 1;
+}
+
+#auth-modal .close-auth-btn:hover {
+    color: #ff007f;
+}
+
+/* Заголовок */
+#auth-modal h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border-bottom: 2px solid #9d4edd;
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px rgba(157, 78, 221, 0.5);
+    color: #f0f3ff;
+}
+
+/* Поля ввода */
+#auth-modal input[type="email"],
+#auth-modal input[type="password"] {
+    width: 100%;
+    padding: 12px 14px;
+    margin: 8px 0 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    color: #f0f3ff;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+    box-sizing: border-box;
+}
+
+#auth-modal input:focus {
+    outline: none;
+    border-color: #9d4edd;
+    box-shadow: 0 0 10px rgba(157, 78, 221, 0.2);
+}
+
+/* Кнопка отправки */
+#auth-modal #auth-submit-btn {
+    width: 100%;
+    padding: 14px;
+    background: #9d4edd;
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 12px;
+    text-transform: uppercase;
+}
+
+#auth-modal #auth-submit-btn:hover {
+    background: #7209b7;
+    box-shadow: 0 0 20px rgba(157, 78, 221, 0.4);
+}
+
+/* Ссылка переключения режима */
+#auth-modal #auth-toggle-link {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 0.95rem;
+    color: #7a82b8;
+}
+
+#auth-modal #auth-toggle-link a {
+    color: #00d2ff;
+    text-decoration: none;
+    cursor: pointer;
+    border-bottom: 1px dashed transparent;
+    transition: border-color 0.2s;
+}
+
+#auth-modal #auth-toggle-link a:hover {
+    border-color: #00d2ff;
+}
+
+/* Сообщение об ошибке/успехе */
+#auth-modal #auth-message {
+    text-align: center;
+    font-size: 0.95rem;
+    min-height: 24px;
+    margin-top: 10px;
+    color: #ff007f;
+}
+
+#auth-modal #auth-message.success {
+    color: #00d2ff;
+}
+
+/* Анимации */
+@keyframes authFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes authSlideIn {
+    from {
+        transform: scale(0.95) translateY(10px);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+/* =============================================
+   КНОПКИ АВТОРИЗАЦИИ (в шапке или на панели)
+   ============================================= */
+.auth-btn {
+    background: rgba(157, 78, 221, 0.15);
+    color: #f0f3ff;
+    border: 1px solid #9d4edd;
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.auth-btn:hover {
+    background: rgba(157, 78, 221, 0.3);
+    border-color: #00d2ff;
+    box-shadow: 0 0 15px rgba(157, 78, 221, 0.3);
+}
+
+#logout-btn {
+    border-color: #ff007f;
+    background: rgba(255, 0, 127, 0.1);
+}
+
+#logout-btn:hover {
+    background: rgba(255, 0, 127, 0.2);
+    border-color: #ff007f;
+}
+
+/* Группа кнопок (например, в правом верхнем углу) */
+#auth-buttons {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* =============================================
+   АДАПТИВНОСТЬ ДЛЯ ТЕЛЕФОНОВ
+   ============================================= */
+@media (max-width: 480px) {
+    #auth-modal .modal-content {
+        padding: 20px 16px;
+        width: 96%;
+    }
+
+    #auth-modal h2 {
+        font-size: 1.2rem;
+    }
+
+    #auth-modal input {
+        padding: 10px 12px;
+        font-size: 0.95rem;
+    }
+
+    #auth-modal #auth-submit-btn {
+        padding: 12px;
+        font-size: 1rem;
+    }
+
+    #auth-modal .close-auth-btn {
+        font-size: 26px;
+        top: 8px;
+        right: 12px;
+    }
+
+    .auth-btn {
+        padding: 6px 14px;
+        font-size: 0.8rem;
+    }
+
+    #auth-buttons {
+        gap: 6px;
+    }
+}

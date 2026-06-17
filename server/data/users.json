@@ -1,0 +1,39 @@
+{
+  "222": {
+    "email": "222",
+    "password": "$2b$10$vGfzdG6/5ip46mTqBTSPwenJuOBJCAqNyedqlZi3Za2kEBc0eW2EK",
+    "build": {
+      "case": null,
+      "motherboard": {
+        "id": "motherboard_0002",
+        "name": "ASUS PRIME Z890-WIFI",
+        "price_approx": 26790,
+        "sketchfabId": "bbb6fd2b16614f319a65af99a4338d77",
+        "links": {
+          "yandex": "https://yandex.ruASUS+PRIME+Z890-WIFI",
+          "dns": "https://dns-shop.ruASUS+PRIME+Z890-WIFI",
+          "megamarket": "https://megamarket.ruASUS+PRIME+Z890-WIFI"
+        },
+        "socket": "LGA1851"
+      },
+      "cpu": {
+        "id": "cpu_0001",
+        "name": "Intel Ultra 7-265",
+        "price_approx": 8890,
+        "sketchfabId": "bbb6fd2b16614f319a65af99a4338d77",
+        "links": {
+          "yandex": "https://yandex.ruIntel+Ultra+7-265",
+          "dns": "https://dns-shop.ruIntel+Ultra+7-265",
+          "megamarket": "https://megamarket.ruIntel+Ultra+7-265"
+        },
+        "socket": "LGA1851"
+      },
+      "cooler": null,
+      "ram": null,
+      "gpu": null,
+      "storage": null,
+      "psu": null,
+      "case_fans": null
+    }
+  }
+}

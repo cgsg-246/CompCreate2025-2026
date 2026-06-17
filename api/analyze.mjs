@@ -65,7 +65,7 @@ export default async function handler(req, res) {
             return res.status(200).json({ generated_text: aiRawText });
 
         } catch (error) {
-            console.error("⚠️ Сбой ИИ:", error.message);
+            console.error("Сбой ИИ:", error.message);
             return res.status(200).json({ generated_text: JSON.stringify(secureFallback) });
         }
     }
