@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:5000';
+const API_BASE = 'https://pc-builder-api-di8k.onrender.com';
 
 export async function apiRequest(endpoint, options = {}) {
     const token = sessionStorage.getItem('auth_token');
