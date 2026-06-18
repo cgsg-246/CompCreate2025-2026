@@ -1,4 +1,4 @@
-const API_BASE_URL = '/api/analyze';
+const API_BASE_URL = 'https://pc-builder-api-di8k.onrender.com/api/analyze';
 
 export async function analyzeBuildWithAI(currentBuild) {
 
