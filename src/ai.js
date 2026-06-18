@@ -1,3 +1,5 @@
+import { apiRequest } from './apiClient.js';
+
 export async function analyzeBuildWithAI(currentBuild) {
     const requiredComponents = {
         cpu: "Процессор",
@@ -64,17 +66,11 @@ export async function analyzeBuildWithAI(currentBuild) {
     `;
 
     try {
-        const response = await fetch('/api/analyze', {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
+        const serverData = await apiRequest('/api/analyze', {
+            method: 'POST',
             body: JSON.stringify({ prompt })
         });
 
-        if (!response.ok) {
-            throw new Error(`Ошибка ответа сервера: ${response.status}`);
-        }
-
-        const serverData = await response.json();
         let aiRawText = serverData.generated_text || "{}";
 
         const jsonStart = aiRawText.indexOf('{');
