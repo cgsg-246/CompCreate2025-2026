@@ -423,7 +423,9 @@ app.post('/api/analyze', async (req, res) => {
 
             console.log('✅ Генерация супер-ответа завершена');
             res.json({ generated_text: JSON.stringify(responseData) });
-        });
+        }
+    }
+});
 
 app.post('/api/auth/register', async (req, res) => {
     const { email, password } = req.body;
