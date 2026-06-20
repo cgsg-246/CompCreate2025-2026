@@ -13,20 +13,20 @@ from components import (
 # ================== СЛОВАРЬ SKETCHFAB ID ==================
 SKETCHFAB_MAPPING = {
     # ---------- ВИДЕОКАРТЫ ----------
-    "rtx 5090": "2f818c18a427480d8968cec07f8d133b",
-    "rtx 5080": "2f818c18a427480d8968cec07f8d133b",
+    "rtx 5090": "2f818c18a427480d8968cec07f8d133b",   
+    "rtx 5080": "2f818c18a427480d8968cec07f8d133b",   
     "rtx 5070 ti": "2f818c18a427480d8968cec07f8d133b",
-    "rtx 5070": "f3b953474fc44979ad44a69b7bc8e911",
-    "rtx 4090": "2f818c18a427480d8968cec07f8d133b",
-    "rtx 4080 super": "2f818c18a427480d8968cec07f8d133b",
+    "rtx 5070": "f3b953474fc44979ad44a69b7bc8e911",   
+    "rtx 4090": "04a6e7b0b1d840f4b198e1a3b4c5d6e7",   
+    "rtx 4080 super": "2f818c18a427480d8968cec07f8d133b", 
     "rtx 4070 ti super": "2f818c18a427480d8968cec07f8d133b",
-    "rtx 4070 super": "f3b953474fc44979ad44a69b7bc8e911",
-    "rtx 4060 ti": "f3b953474fc44979ad44a69b7bc8e911",
-    "rtx 4060": "f3b953474fc44979ad44a69b7bc8e911",
-    "rx 7900 xtx": "2f818c18a427480d8968cec07f8d133b",
-    "rx 7800 xt": "f3b953474fc44979ad44a69b7bc8e911",
-    "rx 7600": "f3b953474fc44979ad44a69b7bc8e911",
-    "arc a770": "2f818c18a427480d8968cec07f8d133b",
+    "rtx 4070 super": "f3b953474fc44979ad44a69b7bc8e911", 
+    "rtx 4060 ti": "f3b953474fc44979ad44a69b7bc8e911", 
+    "rtx 4060": "a30eb74ae47d40e6b50277b86b3195ed",    
+    "rx 7900 xtx": "2f818c18a427480d8968cec07f8d133b", 
+    "rx 7800 xt": "f3b953474fc44979ad44a69b7bc8e911",  
+    "rx 7600": "f3b953474fc44979ad44a69b7bc8e911",     
+    "arc a770": "2f818c18a427480d8968cec07f8d133b",    
 
     # ---------- МАТЕРИНСКИЕ ПЛАТЫ ----------
     "asus prime z790": "0dc19d1287b74fca94d372a2ddc124bd",
