@@ -28,9 +28,6 @@ async function getLocalDatabase() {
     }
 }
 
-// ========================================================================
-//  ГИГАНТСКАЯ ЗАГЛУШКА AI — ПОЛНЫЙ АНАЛИЗ СБОРКИ КАК ПРОФЕССИОНАЛЬНЫЙ ЭКСПЕРТ
-// ========================================================================
 app.post('/api/analyze', async (req, res) => {
     const { prompt } = req.body;
     if (!prompt) {
@@ -39,7 +36,6 @@ app.post('/api/analyze', async (req, res) => {
 
     console.log('Запуск супер-интеллектуального анализа сборки (заглушка)');
 
-    // 1. ИЗВЛЕЧЕНИЕ ДАННЫХ ИЗ ПРОМПТА
     function extractComponent(label, text) {
         const regex = new RegExp(`${label}:\\s*([^\\n]*)`);
         const match = text.match(regex);
@@ -405,14 +401,12 @@ app.post('/api/analyze', async (req, res) => {
                 verdict += finalPhrases[Math.floor(Math.random() * finalPhrases.length)];
             }
 
-            // 8. ФОРМИРОВАНИЕ ОТВЕТА
             const responseData = {
                 compatibility_errors: errors,
                 perf_cyberpunk: `${fpsData['Cyberpunk 2077'] || '—'} FPS`,
                 perf_cs2: `${fpsData['CS2'] || '—'} FPS`,
                 perf_dota2: `${fpsData['DOTA 2'] || '—'} FPS`,
                 verdict: verdict,
-                // Дополнительно можно передать подробную статистику для будущих расширений
                 debug: {
                     combinedScore: combinedScore,
                     cpuScore: cpuScore,
@@ -421,7 +415,7 @@ app.post('/api/analyze', async (req, res) => {
                 }
             };
 
-            console.log('✅ Генерация супер-ответа завершена');
+            console.log('Генерация супер-ответа завершена');
             res.json({ generated_text: JSON.stringify(responseData) });
         }
     }

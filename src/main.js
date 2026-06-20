@@ -197,6 +197,10 @@ async function updateTotalPriceAndAI() {
     }
 }
 
+function handleProductPreview(categoryKey, product) {
+    addComponentTo3D(categoryKey, product.sketchfabId);
+}
+
 async function startApp() {
     try {
         init3DScene();
@@ -205,7 +209,7 @@ async function startApp() {
         if (!response.ok) throw new Error('Не удалось загрузить базу данных');
         const hardwareDatabase = await response.json();
 
-        initUI(hardwareDatabase, handleProductSelection, handleProductDeletion);
+        initUI(hardwareDatabase, handleProductSelection, handleProductDeletion, handleProductPreview);
 
         await loadSavedBuild();
 

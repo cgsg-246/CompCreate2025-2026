@@ -5,8 +5,7 @@ let activeCategoryKey = '';
 let onProductSelectGlobal = null;
 let onProductDeleteGlobal = null;
 
-
-export function initUI(hardwareDatabase, onSelectCallback, onDeleteCallback) {
+export function initUI(hardwareDatabase, onSelectCallback, onDeleteCallback, onPreviewCallback) {
     currentDB = hardwareDatabase;
     onProductSelectGlobal = onSelectCallback;
     onProductDeleteGlobal = onDeleteCallback;
@@ -42,6 +41,7 @@ export function initUI(hardwareDatabase, onSelectCallback, onDeleteCallback) {
             if (e.target === modal) modal.classList.add('hidden');
         });
     }
+    window._onPreviewCallback = onPreviewCallback;
 }
 
 function openComponentsModal(title, categoryKey) {
@@ -130,6 +130,12 @@ export function renderSelectedComponents(currentBuild) {
     };
 
     let hasItems = false;
+
+    card.addEventListener('click', () => {
+        if (typeof onProductSelectGlobal === 'function') {
+            onProductSelectGlobal(categoryKey, item);
+        }
+    });
 
     Object.keys(currentBuild).forEach(categoryKey => {
         const item = currentBuild[categoryKey];
