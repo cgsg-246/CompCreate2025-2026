@@ -1,11 +1,22 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import json
 import os
 import urllib.parse
-import re
 
-from components import cpus, gpus, motherboards, rams, storages, psus, cases, coolers, fans
+# Импорт твоих списков компонентов
+from components import (
+    cpus, gpus, motherboards, rams, storages,
+    psus, cases, coolers, fans
+)
 
+# ================== СЛОВАРЬ SKETCHFAB ID ==================
+# Добавляй сюда свои пары: "ключевая_фраза" : "sketchfab_id"
+# Поиск регистронезависимый, частичное совпадение.
+# Если модель не найдена, используется fallback (RTX 4060).
 SKETCHFAB_MAPPING = {
+    # ---------- ВИДЕОКАРТЫ ----------
     "rtx 5090": "2f818c18a427480d8968cec07f8d133b",
     "rtx 5080": "2f818c18a427480d8968cec07f8d133b",
     "rtx 5070 ti": "2f818c18a427480d8968cec07f8d133b",
@@ -20,7 +31,8 @@ SKETCHFAB_MAPPING = {
     "rx 7800 xt": "f3b953474fc44979ad44a69b7bc8e911",
     "rx 7600": "f3b953474fc44979ad44a69b7bc8e911",
     "arc a770": "2f818c18a427480d8968cec07f8d133b",
-    
+
+    # ---------- МАТЕРИНСКИЕ ПЛАТЫ ----------
     "asus prime z790": "0dc19d1287b74fca94d372a2ddc124bd",
     "asus prime z890": "0dc19d1287b74fca94d372a2ddc124bd",
     "asus prime b760": "0dc19d1287b74fca94d372a2ddc124bd",
@@ -30,6 +42,7 @@ SKETCHFAB_MAPPING = {
     "asrock steel legend": "0dc19d1287b74fca94d372a2ddc124bd",
     "asus rog strix z790": "0dc19d1287b74fca94d372a2ddc124bd",
 
+    # ---------- ПРОЦЕССОРЫ ----------
     "intel core i9": "2f818c18a427480d8968cec07f8d133b",
     "intel core i7": "f3b953474fc44979ad44a69b7bc8e911",
     "intel core i5": "f3b953474fc44979ad44a69b7bc8e911",
@@ -38,28 +51,33 @@ SKETCHFAB_MAPPING = {
     "amd ryzen 7": "f3b953474fc44979ad44a69b7bc8e911",
     "amd ryzen 5": "f3b953474fc44979ad44a69b7bc8e911",
 
+    # ---------- ОПЕРАТИВНАЯ ПАМЯТЬ ----------
     "kingston fury": "f3b953474fc44979ad44a69b7bc8e911",
     "g.skill trident": "f3b953474fc44979ad44a69b7bc8e911",
     "corsair vengeance": "f3b953474fc44979ad44a69b7bc8e911",
     "adata xpg": "f3b953474fc44979ad44a69b7bc8e911",
 
+    # ---------- НАКОПИТЕЛИ ----------
     "samsung 990 pro": "f3b953474fc44979ad44a69b7bc8e911",
     "samsung 980 pro": "f3b953474fc44979ad44a69b7bc8e911",
     "kingston nv2": "f3b953474fc44979ad44a69b7bc8e911",
     "crucial p3": "f3b953474fc44979ad44a69b7bc8e911",
 
+    # ---------- БЛОКИ ПИТАНИЯ ----------
     "chieftec proton": "f3b953474fc44979ad44a69b7bc8e911",
     "montech titan": "f3b953474fc44979ad44a69b7bc8e911",
     "super flower leadex": "f3b953474fc44979ad44a69b7bc8e911",
     "deepcool pm": "f3b953474fc44979ad44a69b7bc8e911",
     "be quiet!": "f3b953474fc44979ad44a69b7bc8e911",
 
+    # ---------- КОРПУСА ----------
     "deepcool cc560": "f3b953474fc44979ad44a69b7bc8e911",
     "deepcool ch560": "f3b953474fc44979ad44a69b7bc8e911",
     "lian li pc-o11": "f3b953474fc44979ad44a69b7bc8e911",
     "nzxt h9": "f3b953474fc44979ad44a69b7bc8e911",
     "phanteks nv5": "f3b953474fc44979ad44a69b7bc8e911",
 
+    # ---------- КУЛЕРЫ ----------
     "id-cooling frostflow": "f3b953474fc44979ad44a69b7bc8e911",
     "id-cooling se": "f3b953474fc44979ad44a69b7bc8e911",
     "deepcool ak": "f3b953474fc44979ad44a69b7bc8e911",
@@ -74,19 +92,28 @@ SKETCHFAB_MAPPING = {
     "lian li uni fan": "f3b953474fc44979ad44a69b7bc8e911",
 }
 
+# Если хочешь загружать маппинг из внешнего JSON-файла, раскомментируй:
+# with open("sketchfab_mapping.json", "r", encoding="utf-8") as f:
+#     SKETCHFAB_MAPPING = json.load(f)
+
+# ================== FALLBACK ID ==================
+# Если для детали не нашлось подходящего ID, используем этот (RTX 4060 — точно рабочий)
+FALLBACK_ID = "f3b953474fc44979ad44a69b7bc8e911"
+
+# ================== ФУНКЦИЯ ПОДСТАНОВКИ ID ==================
 def get_sketchfab_id(name):
     """
     Возвращает sketchfabId на основе названия детали.
-    Сначала пытается найти полное совпадение (регистронезависимо),
-    затем частичное (если ключевая фраза входит в название).
-    Если ничего не найдено — возвращает заглушку.
+    Ищет частичное совпадение (регистронезависимо).
+    Если ничего не найдено — возвращает FALLBACK_ID.
     """
     name_lower = name.lower()
     for key, sid in SKETCHFAB_MAPPING.items():
         if key in name_lower:
             return sid
-    return "bbb6fd2b16614f319a65af99a4338d77"
+    return FALLBACK_ID
 
+# ================== ОСТАЛЬНЫЕ ФУНКЦИИ (твои) ==================
 def detect_socket(name):
     name_lower = name.lower()
     if any(x in name_lower for x in ["lga1700", "i3-12", "i5-12", "i5-13", "i5-14", "i7-12", "i7-13", "i7-14", "i9-12", "i9-13", "i9-14", "h610", "b760", "z790"]):
@@ -102,6 +129,7 @@ def detect_socket(name):
 def calculate_unique_price(category, name, index):
     name_lower = name.lower()
     base_price = 4500
+
     if category == "cpu":
         if "i9" in name_lower or "ryzen 9" in name_lower or "9950" in name_lower: base_price = 52000
         elif "i7" in name_lower or "ryzen 7" in name_lower or "7800x3d" in name_lower: base_price = 36000
@@ -148,6 +176,7 @@ def calculate_unique_price(category, name, index):
     final_price = (final_price // 100) * 100 + 90
     return final_price
 
+# ================== СБОРКА БАЗЫ ДАННЫХ ==================
 raw_data = {
     "cpu": cpus.items,
     "gpu": gpus.items,
@@ -167,6 +196,7 @@ for category, items_list in raw_data.items():
     for index, item_name in enumerate(items_list, start=1):
         encoded_name = urllib.parse.quote_plus(item_name)
         
+        # === ГЛАВНОЕ: получаем реальный sketchfabId ===
         sketchfab_id = get_sketchfab_id(item_name)
         
         unique_price = calculate_unique_price(category, item_name, index)
@@ -185,13 +215,15 @@ for category, items_list in raw_data.items():
             product["socket"] = detect_socket(item_name)
         final_database[category].append(product)
 
+# ================== СОХРАНЕНИЕ ==================
 output_path = os.path.join("dist", "assets", "database.json")
 os.makedirs(os.path.dirname(output_path), exist_ok=True)
 with open(output_path, "w", encoding="utf-8") as f:
     json.dump(final_database, f, ensure_ascii=False, indent=2)
 
 print("\n==================================================")
-print("БАЗА ДАННЫХ УСПЕШНО ОБНОВЛЕНА!")
-print(f"Файл сохранен в: {output_path}")
-print("Проверь, что для нужных деталей подставились реальные sketchfabId.")
+print("✅ БАЗА ДАННЫХ УСПЕШНО ОБНОВЛЕНА!")
+print(f"📁 Файл сохранен в: {output_path}")
+print("🔍 Теперь у большинства деталей будут рабочие 3D-модели.")
+print("   Если для какой-то детали не нашлось ID, используется fallback (RTX 4060).")
 print("==================================================")
