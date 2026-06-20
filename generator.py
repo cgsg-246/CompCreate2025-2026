@@ -5,16 +5,12 @@ import json
 import os
 import urllib.parse
 
-# Импорт твоих списков компонентов
 from components import (
     cpus, gpus, motherboards, rams, storages,
     psus, cases, coolers, fans
 )
 
 # ================== СЛОВАРЬ SKETCHFAB ID ==================
-# Добавляй сюда свои пары: "ключевая_фраза" : "sketchfab_id"
-# Поиск регистронезависимый, частичное совпадение.
-# Если модель не найдена, используется fallback (RTX 4060).
 SKETCHFAB_MAPPING = {
     # ---------- ВИДЕОКАРТЫ ----------
     "rtx 5090": "2f818c18a427480d8968cec07f8d133b",
@@ -43,77 +39,42 @@ SKETCHFAB_MAPPING = {
     "asus rog strix z790": "0dc19d1287b74fca94d372a2ddc124bd",
 
     # ---------- ПРОЦЕССОРЫ ----------
-    "intel core i9": "2f818c18a427480d8968cec07f8d133b",
-    "intel core i7": "f3b953474fc44979ad44a69b7bc8e911",
-    "intel core i5": "f3b953474fc44979ad44a69b7bc8e911",
-    "intel core i3": "f3b953474fc44979ad44a69b7bc8e911",
-    "amd ryzen 9": "2f818c18a427480d8968cec07f8d133b",
-    "amd ryzen 7": "f3b953474fc44979ad44a69b7bc8e911",
-    "amd ryzen 5": "f3b953474fc44979ad44a69b7bc8e911",
+    # Добавь сюда реальные модели процессоров, если найдёшь
+    # "intel core i9": "..." и т.д.
+    # Пока оставляем без ID, чтобы не показывать видеокарту.
 
     # ---------- ОПЕРАТИВНАЯ ПАМЯТЬ ----------
-    "kingston fury": "f3b953474fc44979ad44a69b7bc8e911",
-    "g.skill trident": "f3b953474fc44979ad44a69b7bc8e911",
-    "corsair vengeance": "f3b953474fc44979ad44a69b7bc8e911",
-    "adata xpg": "f3b953474fc44979ad44a69b7bc8e911",
+    # Пока нет моделей для ОЗУ, оставляем без ID.
 
     # ---------- НАКОПИТЕЛИ ----------
-    "samsung 990 pro": "f3b953474fc44979ad44a69b7bc8e911",
-    "samsung 980 pro": "f3b953474fc44979ad44a69b7bc8e911",
-    "kingston nv2": "f3b953474fc44979ad44a69b7bc8e911",
-    "crucial p3": "f3b953474fc44979ad44a69b7bc8e911",
+    # Пока нет моделей для накопителей.
 
     # ---------- БЛОКИ ПИТАНИЯ ----------
-    "chieftec proton": "f3b953474fc44979ad44a69b7bc8e911",
-    "montech titan": "f3b953474fc44979ad44a69b7bc8e911",
-    "super flower leadex": "f3b953474fc44979ad44a69b7bc8e911",
-    "deepcool pm": "f3b953474fc44979ad44a69b7bc8e911",
-    "be quiet!": "f3b953474fc44979ad44a69b7bc8e911",
+    # Пока нет.
 
     # ---------- КОРПУСА ----------
-    "deepcool cc560": "f3b953474fc44979ad44a69b7bc8e911",
-    "deepcool ch560": "f3b953474fc44979ad44a69b7bc8e911",
-    "lian li pc-o11": "f3b953474fc44979ad44a69b7bc8e911",
-    "nzxt h9": "f3b953474fc44979ad44a69b7bc8e911",
-    "phanteks nv5": "f3b953474fc44979ad44a69b7bc8e911",
+    # Пока нет.
 
     # ---------- КУЛЕРЫ ----------
-    "id-cooling frostflow": "f3b953474fc44979ad44a69b7bc8e911",
-    "id-cooling se": "f3b953474fc44979ad44a69b7bc8e911",
-    "deepcool ak": "f3b953474fc44979ad44a69b7bc8e911",
-    "arctic liquid freezer": "f3b953474fc44979ad44a69b7bc8e911",
-    "noctua nh-d15": "f3b953474fc44979ad44a69b7bc8e911",
+    # Пока нет.
 
     # ---------- ВЕНТИЛЯТОРЫ ----------
-    "arctic p12": "f3b953474fc44979ad44a69b7bc8e911",
-    "arctic p14": "f3b953474fc44979ad44a69b7bc8e911",
-    "be quiet! pure wings": "f3b953474fc44979ad44a69b7bc8e911",
-    "thermalright tl-c12": "f3b953474fc44979ad44a69b7bc8e911",
-    "lian li uni fan": "f3b953474fc44979ad44a69b7bc8e911",
+    # Пока нет.
 }
-
-# Если хочешь загружать маппинг из внешнего JSON-файла, раскомментируй:
-# with open("sketchfab_mapping.json", "r", encoding="utf-8") as f:
-#     SKETCHFAB_MAPPING = json.load(f)
-
-# ================== FALLBACK ID ==================
-# Если для детали не нашлось подходящего ID, используем этот (RTX 4060 — точно рабочий)
-FALLBACK_ID = "f3b953474fc44979ad44a69b7bc8e911"
 
 # ================== ФУНКЦИЯ ПОДСТАНОВКИ ID ==================
 def get_sketchfab_id(name):
     """
-    Возвращает sketchfabId на основе названия детали.
-    Ищет частичное совпадение (регистронезависимо).
-    Если ничего не найдено — возвращает FALLBACK_ID.
+    Возвращает sketchfabId, если найдено совпадение.
+    Иначе возвращает None (в JSON это будет null).
     """
     name_lower = name.lower()
     for key, sid in SKETCHFAB_MAPPING.items():
         if key in name_lower:
             return sid
-    return FALLBACK_ID
+    return None  # <-- теперь не будет fallback
 
-# ================== ОСТАЛЬНЫЕ ФУНКЦИИ (твои) ==================
+# ================== ОСТАЛЬНЫЕ ФУНКЦИИ (без изменений) ==================
 def detect_socket(name):
     name_lower = name.lower()
     if any(x in name_lower for x in ["lga1700", "i3-12", "i5-12", "i5-13", "i5-14", "i7-12", "i7-13", "i7-14", "i9-12", "i9-13", "i9-14", "h610", "b760", "z790"]):
@@ -196,7 +157,7 @@ for category, items_list in raw_data.items():
     for index, item_name in enumerate(items_list, start=1):
         encoded_name = urllib.parse.quote_plus(item_name)
         
-        # === ГЛАВНОЕ: получаем реальный sketchfabId ===
+        # Получаем ID или None
         sketchfab_id = get_sketchfab_id(item_name)
         
         unique_price = calculate_unique_price(category, item_name, index)
@@ -204,7 +165,7 @@ for category, items_list in raw_data.items():
             "id": f"{category}_{index:04d}",
             "name": item_name,
             "price_approx": unique_price,
-            "sketchfabId": sketchfab_id,
+            "sketchfabId": sketchfab_id,  # может быть None
             "links": {
                 "yandex": f"https://yandex.ru{encoded_name}",
                 "dns": f"https://dns-shop.ru{encoded_name}",
@@ -222,8 +183,8 @@ with open(output_path, "w", encoding="utf-8") as f:
     json.dump(final_database, f, ensure_ascii=False, indent=2)
 
 print("\n==================================================")
-print("✅ БАЗА ДАННЫХ УСПЕШНО ОБНОВЛЕНА!")
+print("✅ БАЗА ДАННЫХ ОБНОВЛЕНА!")
 print(f"📁 Файл сохранен в: {output_path}")
-print("🔍 Теперь у большинства деталей будут рабочие 3D-модели.")
-print("   Если для какой-то детали не нашлось ID, используется fallback (RTX 4060).")
+print("🔍 Теперь только детали с реальным ID будут показывать 3D-модель.")
+print("   Остальные — будут показывать placeholder (без модели).")
 print("==================================================")
