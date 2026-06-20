@@ -1,72 +1,76 @@
 let viewer = null;
-let timeoutId = null;
 let currentContainer = null;
 
 export function init3DScene() {
     const container = document.getElementById('canvas-container');
     if (!container) return;
+    currentContainer = container;
+    showPlaceholder('Выберите деталь для просмотра', '🖥️');
+}
 
-    container.innerHTML = `
+function showPlaceholder(text, icon = '🖥️') {
+    if (!currentContainer) return;
+    currentContainer.innerHTML = `
         <div style="display: flex; justify-content: center; align-items: center; height: 100%; color: var(--text-muted); flex-direction: column; gap: 10px;">
-            <span style="font-size: 2rem;">🖥️</span>
-            <span>Выберите деталь для просмотра</span>
+            <span style="font-size: 2rem;">${icon}</span>
+            <span>${text}</span>
         </div>
     `;
-    currentContainer = container;
-    console.log('3D-сцена инициализирована (режим placeholder)');
 }
 
 export function addComponentTo3D(categoryKey, sketchfabId) {
-    if (!currentContainer) {
-        console.warn('Контейнер не найден');
-        return;
-    }
+    if (!currentContainer) return;
 
     if (!sketchfabId || sketchfabId === "bbb6fd2b16614f319a65af99a4338d77") {
-        currentContainer.innerHTML = `
-            <div style="display: flex; justify-content: center; align-items: center; height: 100%; color: var(--text-muted); flex-direction: column; gap: 10px;">
-                <span style="font-size: 2rem;">🖥️</span>
-                <span>Модель не доступна</span>
-                <span style="font-size: 0.9rem;">Попробуйте выбрать другую деталь</span>
-            </div>
-        `;
+        showPlaceholder('Модель не доступна', '🖥️');
         return;
     }
 
-    currentContainer.innerHTML = `
-        <div style="display: flex; justify-content: center; align-items: center; height: 100%; color: var(--text-muted); flex-direction: column; gap: 10px;">
-            <span style="font-size: 2rem;">⏳</span>
-            <span>Загрузка модели...</span>
-        </div>
+    currentContainer.innerHTML = '';
+
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'width:100%; height:100%; position:relative;';
+
+    const loading = document.createElement('div');
+    loading.style.cssText = `
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: var(--text-muted);
+        font-size: 1.2rem;
+        z-index: 10;
+        background: rgba(10, 11, 30, 0.8);
+        padding: 20px 30px;
+        border-radius: 8px;
+        text-align: center;
     `;
+    loading.textContent = '⏳ Загрузка модели...';
 
     const iframe = document.createElement('iframe');
     iframe.src = `https://sketchfab.com/models/${sketchfabId}/embed`;
-    iframe.style.width = '100%';
-    iframe.style.height = '100%';
-    iframe.style.border = 'none';
+    iframe.style.cssText = 'width:100%; height:100%; border:none; position:absolute; top:0; left:0;';
     iframe.allow = 'autoplay; fullscreen';
     iframe.allowFullscreen = true;
 
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => {
-        if (currentContainer.contains(iframe)) {
-            currentContainer.innerHTML = `
-                <div style="display: flex; justify-content: center; align-items: center; height: 100%; color: var(--text-muted); flex-direction: column; gap: 10px;">
-                    <span style="font-size: 2rem;">⚠️</span>
-                    <span>Модель не загрузилась</span>
-                    <span style="font-size: 0.9rem;">Возможно, она недоступна</span>
-                </div>
+    let timeoutId = setTimeout(() => {
+        if (loading.style.display !== 'none') {
+            loading.innerHTML = `
+                <span style="font-size: 2rem;">⚠️</span><br>
+                Модель не загрузилась<br>
+                <span style="font-size: 0.8rem;">Попробуйте выбрать другую деталь</span>
             `;
+            loading.style.color = '#ff007f';
         }
-    }, 5000);
+    }, 10000);
 
     iframe.onload = () => {
         clearTimeout(timeoutId);
-        currentContainer.innerHTML = '';
-        currentContainer.appendChild(iframe);
-        viewer = iframe;
+        loading.style.display = 'none';
     };
 
-    currentContainer.appendChild(iframe);
+    wrapper.appendChild(iframe);
+    wrapper.appendChild(loading);
+    currentContainer.appendChild(wrapper);
+    viewer = iframe;
 }
