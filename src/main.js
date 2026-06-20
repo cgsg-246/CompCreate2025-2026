@@ -26,7 +26,7 @@ async function loadSavedBuild() {
             if (data && data.build) {
                 build = data.build;
                 localStorage.setItem('cached_build', JSON.stringify(build));
-                console.log('📡 Загружена сборка с сервера');
+                console.log('Загружена сборка с сервера');
             }
         } catch (e) {
             console.warn('Не удалось загрузить с сервера, берём из кэша', e);
@@ -60,7 +60,7 @@ async function saveBuildToStorage() {
                 method: 'POST',
                 body: JSON.stringify({ build: currentBuild })
             });
-            console.log('☁️ Сборка синхронизирована с сервером');
+            console.log('Сборка синхронизирована с сервером');
         } catch (e) {
             console.warn('Ошибка синхронизации:', e);
         }
@@ -158,7 +158,7 @@ async function handleProductSelection(categoryKey, product) {
 
 async function handleProductDeletion(categoryKey) {
     currentBuild[categoryKey] = null;
-    addComponentTo3D(categoryKey, "bbb6fd2b16614f319a65af99a4338d77");
+    addComponentTo3D(categoryKey, null);
     renderSelectedComponents(currentBuild);
     updateTotalPriceAndAI();
     await saveBuildToStorage();

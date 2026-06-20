@@ -4,11 +4,13 @@ let currentDB = null;
 let activeCategoryKey = '';
 let onProductSelectGlobal = null;
 let onProductDeleteGlobal = null;
+let onProductPreviewGlobal = null;
 
 export function initUI(hardwareDatabase, onSelectCallback, onDeleteCallback, onPreviewCallback) {
     currentDB = hardwareDatabase;
     onProductSelectGlobal = onSelectCallback;
     onProductDeleteGlobal = onDeleteCallback;
+    onProductPreviewGlobal = onPreviewCallback;
 
     const modal = document.getElementById('modal');
     const closeModal = document.getElementById('close-modal');
@@ -41,7 +43,6 @@ export function initUI(hardwareDatabase, onSelectCallback, onDeleteCallback, onP
             if (e.target === modal) modal.classList.add('hidden');
         });
     }
-    window._onPreviewCallback = onPreviewCallback;
 }
 
 function openComponentsModal(title, categoryKey) {
@@ -116,7 +117,6 @@ function applyFiltersAndRender() {
     });
 }
 
-
 export function renderSelectedComponents(currentBuild) {
     const container = document.getElementById('selected-components-list');
     if (!container) return;
@@ -131,12 +131,6 @@ export function renderSelectedComponents(currentBuild) {
 
     let hasItems = false;
 
-    card.addEventListener('click', () => {
-        if (typeof onProductSelectGlobal === 'function') {
-            onProductSelectGlobal(categoryKey, item);
-        }
-    });
-
     Object.keys(currentBuild).forEach(categoryKey => {
         const item = currentBuild[categoryKey];
         if (!item) return;
@@ -144,13 +138,13 @@ export function renderSelectedComponents(currentBuild) {
         hasItems = true;
         const card = document.createElement('div');
         card.className = 'selected-component-card';
-        card.style.cssText = 'display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); border: 1px solid rgba(157, 78, 221, 0.2); padding: 8px 12px; border-radius: 6px; font-size: 0.9rem; margin-bottom: 4px;';
+        card.style.cssText = 'display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); border: 1px solid rgba(157, 78, 221, 0.2); padding: 8px 12px; border-radius: 6px; font-size: 0.9rem; margin-bottom: 4px; cursor: pointer; transition: background 0.2s;';
+        card.title = 'Кликните, чтобы показать 3D-модель';
 
         card.innerHTML = `
             <div style="flex: 1; min-width: 0; padding-right: 10px;">
                 <span style="color: var(--accent-blue); font-weight: bold; font-size: 0.75rem; text-transform: uppercase; display: block;">${categoryNames[categoryKey]}</span>
                 <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; margin: 2px 0;" title="${item.name}">${item.name}</span>
-                <!-- ВЫВОДИМ ССЫЛКИ НА ДЕТАЛИ -->
                 <div style="display: flex; gap: 10px; font-size: 0.75rem; margin-top: 4px;">
                     <a href="${item.links?.dns || '#'}" target="_blank" style="color: var(--text-muted); text-decoration: none; border-bottom: 1px dashed;">DNS ↗</a>
                     <a href="${item.links?.yandex || '#'}" target="_blank" style="color: var(--text-muted); text-decoration: none; border-bottom: 1px dashed;">Яндекс ↗</a>
@@ -159,12 +153,25 @@ export function renderSelectedComponents(currentBuild) {
             </div>
             <div style="display: flex; align-items: center; gap: 10px;">
                 <span style="font-weight: bold; color: var(--accent-blue); white-space: nowrap;">${(item.price_approx || 0).toLocaleString()} ₽</span>
-                <!-- КРЕСТИК УДАЛЕНИЯ -->
                 <span class="delete-selected-btn" style="color: var(--accent-pink); font-size: 1.4rem; cursor: pointer; font-weight: bold; padding: 0 4px; line-height: 1;">&times;</span>
             </div>
         `;
 
-        card.querySelector('.delete-selected-btn').addEventListener('click', () => {
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('.delete-selected-btn') || e.target.closest('a')) return;
+            if (typeof onProductPreviewGlobal === 'function') {
+                onProductPreviewGlobal(categoryKey, item);
+            }
+            document.querySelectorAll('.selected-component-card').forEach(c => {
+                c.style.borderColor = 'rgba(157, 78, 221, 0.2)';
+                c.style.background = 'rgba(255,255,255,0.03)';
+            });
+            card.style.borderColor = '#00d2ff';
+            card.style.background = 'rgba(0, 210, 255, 0.05)';
+        });
+
+        card.querySelector('.delete-selected-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
             if (typeof onProductDeleteGlobal === 'function') {
                 onProductDeleteGlobal(categoryKey);
             }
