@@ -31,11 +31,13 @@ async function loadSavedBuild() {
         } catch (e) {
             console.warn('Не удалось загрузить с сервера, берём из кэша', e);
             const cached = localStorage.getItem('cached_build');
-            if (cached) build = JSON.parse(cached);
+            if (cached)
+                build = JSON.parse(cached);
         }
     } else {
         const guest = sessionStorage.getItem('guest_build');
-        if (guest) build = JSON.parse(guest);
+        if (guest)
+            build = JSON.parse(guest);
     }
 
     if (build) {
@@ -74,31 +76,47 @@ function updateAuthUI() {
     const loginBtn = document.getElementById('login-btn');
     const registerBtn = document.getElementById('register-btn');
     const logoutBtn = document.getElementById('logout-btn');
-    if (loginBtn) loginBtn.style.display = isAuth ? 'none' : 'inline-block';
-    if (registerBtn) registerBtn.style.display = isAuth ? 'none' : 'inline-block';
-    if (logoutBtn) logoutBtn.style.display = isAuth ? 'inline-block' : 'none';
-}
-
-function closeLoginModal() {
-    document.getElementById('login-modal').style.display = 'none';
-}
-function closeRegisterModal() {
-    document.getElementById('register-modal').style.display = 'none';
+    if (loginBtn)
+        loginBtn.style.display = isAuth ? 'none' : 'inline-block';
+    if (registerBtn)
+        registerBtn.style.display = isAuth ? 'none' : 'inline-block';
+    if (logoutBtn)
+        logoutBtn.style.display = isAuth ? 'inline-block' : 'none';
 }
 
 document.getElementById('login-btn').addEventListener('click', () => {
-    document.getElementById('login-modal').style.display = 'flex';
+    closeRegisterModal();
+    openModal('login-modal');
 });
 document.getElementById('register-btn').addEventListener('click', () => {
-    document.getElementById('register-modal').style.display = 'flex';
+    closeLoginModal();
+    openModal('register-modal');
 });
 
-document.getElementById('login-close').addEventListener('click', closeLoginModal);
-document.getElementById('register-close').addEventListener('click', closeRegisterModal);
+function openModal(id) {
+    const modal = document.getElementById(id);
+    if (modal)
+        modal.classList.add('show');
+}
+
+function closeLoginModal() {
+    const modal = document.getElementById('login-modal');
+    if (modal)
+        modal.classList.remove('show');
+}
+function closeRegisterModal() {
+    const modal = document.getElementById('register-modal');
+    if (modal)
+        modal.classList.remove('show');
+}
 
 window.addEventListener('click', (e) => {
-    if (e.target === document.getElementById('login-modal')) closeLoginModal();
-    if (e.target === document.getElementById('register-modal')) closeRegisterModal();
+    if (e.target === document.getElementById('login-modal')) {
+        closeLoginModal();
+    }
+    if (e.target === document.getElementById('register-modal')) {
+        closeRegisterModal();
+    }
 });
 
 document.addEventListener('keydown', (e) => {
@@ -111,28 +129,70 @@ document.addEventListener('keydown', (e) => {
 document.getElementById('login-submit').addEventListener('click', async () => {
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
+    const submitBtn = document.getElementById('login-submit');
+    const msgEl = document.getElementById('login-message');
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Вход';
+    submitBtn.classList.add('btn-loading');
+
     try {
         await login(email, password);
-        alert('Вход выполнен!');
-        closeLoginModal();
-        await loadSavedBuild();
-        updateAuthUI();
+        msgEl.textContent = 'Вход выполнен!';
+        msgEl.style.color = '#00d2ff';
+        setTimeout(async () => {
+            closeLoginModal();
+            document.getElementById('login-email').value = '';
+            document.getElementById('login-password').value = '';
+            msgEl.textContent = '';
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Войти';
+            submitBtn.classList.remove('btn-loading');
+            await loadSavedBuild();
+            updateAuthUI();
+        }, 1000);
     } catch (e) {
-        alert('Ошибка входа: ' + e.message);
+        msgEl.textContent = '' + e.message;
+        msgEl.style.color = '#ff007f';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Войти';
+        submitBtn.classList.remove('btn-loading');
     }
 });
 
 document.getElementById('register-submit').addEventListener('click', async () => {
     const email = document.getElementById('register-email').value;
     const password = document.getElementById('register-password').value;
+    const submitBtn = document.getElementById('register-submit');
+    const msgEl = document.getElementById('register-message');
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Идет регистрация';
+    submitBtn.classList.add('btn-loading');
+
     try {
         await register(email, password);
-        alert('Регистрация успешна!');
-        closeRegisterModal();
-        await loadSavedBuild();
-        updateAuthUI();
+        msgEl.textContent = 'Регистрация успешна';
+        msgEl.style.color = '#00d2ff';
+
+        setTimeout(async () => {
+            closeRegisterModal();
+            document.getElementById('register-email').value = '';
+            document.getElementById('register-password').value = '';
+            msgEl.textContent = '';
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Зарегистрироваться';
+            submitBtn.classList.remove('btn-loading');
+            await loadSavedBuild();
+            updateAuthUI();
+        }, 1000);
+
     } catch (e) {
-        alert('Ошибка регистрации: ' + e.message);
+        msgEl.textContent = '' + e.message;
+        msgEl.style.color = '#ff007f';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Зарегистрироваться';
+        submitBtn.classList.remove('btn-loading');
     }
 });
 
@@ -213,7 +273,7 @@ async function startApp() {
 
         await loadSavedBuild();
 
-        console.log("Конструктор запущен!");
+        console.log("Конструктор запущен");
     } catch (e) {
         console.error("Ошибка старта:", e);
     }
