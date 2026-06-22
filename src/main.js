@@ -31,13 +31,11 @@ async function loadSavedBuild() {
         } catch (e) {
             console.warn('Не удалось загрузить с сервера, берём из кэша', e);
             const cached = localStorage.getItem('cached_build');
-            if (cached)
-                build = JSON.parse(cached);
+            if (cached) build = JSON.parse(cached);
         }
     } else {
         const guest = sessionStorage.getItem('guest_build');
-        if (guest)
-            build = JSON.parse(guest);
+        if (guest) build = JSON.parse(guest);
     }
 
     if (build) {
@@ -76,39 +74,42 @@ function updateAuthUI() {
     const loginBtn = document.getElementById('login-btn');
     const registerBtn = document.getElementById('register-btn');
     const logoutBtn = document.getElementById('logout-btn');
-    if (loginBtn)
-        loginBtn.style.display = isAuth ? 'none' : 'inline-block';
-    if (registerBtn)
-        registerBtn.style.display = isAuth ? 'none' : 'inline-block';
-    if (logoutBtn)
-        logoutBtn.style.display = isAuth ? 'inline-block' : 'none';
+    if (loginBtn) loginBtn.style.display = isAuth ? 'none' : 'inline-block';
+    if (registerBtn) registerBtn.style.display = isAuth ? 'none' : 'inline-block';
+    if (logoutBtn) logoutBtn.style.display = isAuth ? 'inline-block' : 'none';
+}
+
+function openModal(id) {
+    const modal = document.getElementById(id);
+    if (modal) modal.classList.add('show');
+}
+
+function closeLoginModal() {
+    const modal = document.getElementById('login-modal');
+    if (modal) modal.classList.remove('show');
+    const msg = document.getElementById('login-message');
+    if (msg) { msg.textContent = ''; msg.className = 'form-message'; }
+}
+
+function closeRegisterModal() {
+    const modal = document.getElementById('register-modal');
+    if (modal) modal.classList.remove('show');
+    const msg = document.getElementById('register-message');
+    if (msg) { msg.textContent = ''; msg.className = 'form-message'; }
 }
 
 document.getElementById('login-btn').addEventListener('click', () => {
     closeRegisterModal();
     openModal('login-modal');
 });
+
 document.getElementById('register-btn').addEventListener('click', () => {
     closeLoginModal();
     openModal('register-modal');
 });
 
-function openModal(id) {
-    const modal = document.getElementById(id);
-    if (modal)
-        modal.classList.add('show');
-}
-
-function closeLoginModal() {
-    const modal = document.getElementById('login-modal');
-    if (modal)
-        modal.classList.remove('show');
-}
-function closeRegisterModal() {
-    const modal = document.getElementById('register-modal');
-    if (modal)
-        modal.classList.remove('show');
-}
+document.getElementById('login-close').addEventListener('click', closeLoginModal);
+document.getElementById('register-close').addEventListener('click', closeRegisterModal);
 
 window.addEventListener('click', (e) => {
     if (e.target === document.getElementById('login-modal')) {
@@ -126,11 +127,18 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-document.getElementById('login-submit').addEventListener('click', async () => {
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-    const submitBtn = document.getElementById('login-submit');
+document.getElementById('login-submit').addEventListener('click', async function (e) {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value.trim();
+    const submitBtn = this;
     const msgEl = document.getElementById('login-message');
+
+    if (!email || !password) {
+        msgEl.textContent = 'Заполните все поля';
+        msgEl.className = 'form-message error';
+        return;
+    }
 
     submitBtn.disabled = true;
     submitBtn.textContent = 'Вход';
@@ -138,13 +146,12 @@ document.getElementById('login-submit').addEventListener('click', async () => {
 
     try {
         await login(email, password);
-        msgEl.textContent = 'Вход выполнен!';
-        msgEl.style.color = '#00d2ff';
+        msgEl.textContent = 'Вход выполнен';
+        msgEl.className = 'form-message success';
         setTimeout(async () => {
             closeLoginModal();
             document.getElementById('login-email').value = '';
             document.getElementById('login-password').value = '';
-            msgEl.textContent = '';
             submitBtn.disabled = false;
             submitBtn.textContent = 'Войти';
             submitBtn.classList.remove('btn-loading');
@@ -153,43 +160,47 @@ document.getElementById('login-submit').addEventListener('click', async () => {
         }, 1000);
     } catch (e) {
         msgEl.textContent = '' + e.message;
-        msgEl.style.color = '#ff007f';
+        msgEl.className = 'form-message error';
         submitBtn.disabled = false;
         submitBtn.textContent = 'Войти';
         submitBtn.classList.remove('btn-loading');
     }
 });
 
-document.getElementById('register-submit').addEventListener('click', async () => {
-    const email = document.getElementById('register-email').value;
-    const password = document.getElementById('register-password').value;
-    const submitBtn = document.getElementById('register-submit');
+document.getElementById('register-submit').addEventListener('click', async function (e) {
+    e.preventDefault();
+    const email = document.getElementById('register-email').value.trim();
+    const password = document.getElementById('register-password').value.trim();
+    const submitBtn = this;
     const msgEl = document.getElementById('register-message');
 
+    if (!email || !password) {
+        msgEl.textContent = 'Заполните все поля';
+        msgEl.className = 'form-message error';
+        return;
+    }
+
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Идет регистрация';
+    submitBtn.textContent = 'Регистрация';
     submitBtn.classList.add('btn-loading');
 
     try {
         await register(email, password);
-        msgEl.textContent = 'Регистрация успешна';
-        msgEl.style.color = '#00d2ff';
-
+        msgEl.textContent = 'Регистрация успешна!';
+        msgEl.className = 'form-message success';
         setTimeout(async () => {
             closeRegisterModal();
             document.getElementById('register-email').value = '';
             document.getElementById('register-password').value = '';
-            msgEl.textContent = '';
             submitBtn.disabled = false;
             submitBtn.textContent = 'Зарегистрироваться';
             submitBtn.classList.remove('btn-loading');
             await loadSavedBuild();
             updateAuthUI();
         }, 1000);
-
     } catch (e) {
         msgEl.textContent = '' + e.message;
-        msgEl.style.color = '#ff007f';
+        msgEl.className = 'form-message error';
         submitBtn.disabled = false;
         submitBtn.textContent = 'Зарегистрироваться';
         submitBtn.classList.remove('btn-loading');
@@ -264,15 +275,11 @@ function handleProductPreview(categoryKey, product) {
 async function startApp() {
     try {
         init3DScene();
-
         const response = await fetch('./assets/database.json');
         if (!response.ok) throw new Error('Не удалось загрузить базу данных');
         const hardwareDatabase = await response.json();
-
         initUI(hardwareDatabase, handleProductSelection, handleProductDeletion, handleProductPreview);
-
         await loadSavedBuild();
-
         console.log("Конструктор запущен");
     } catch (e) {
         console.error("Ошибка старта:", e);
