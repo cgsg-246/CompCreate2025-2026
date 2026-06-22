@@ -6,24 +6,19 @@
 
 body {
     background-color: #0a0b1e;
-    /* Глубокий темно-синий */
     color: #f0f3ff;
-    /* Светлый геймерский текст */
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     min-height: 100vh;
     overflow-y: auto;
-    /* Разрешаем скролл всей страницы */
 }
 
 #app {
     display: grid;
     grid-template-columns: 300px 1fr 350px;
-    /* 3 колонки: Меню - 3D - ИИ */
     min-height: 100vh;
     width: 100vw;
 }
 
-/* Общие стили для боковых панелей (эффект темного стекла) */
 aside {
     background: rgba(18, 20, 50, 0.6);
     backdrop-filter: blur(12px);
@@ -36,7 +31,6 @@ aside {
     border: 1px solid rgba(255, 255, 255, 0.03);
 }
 
-/* Центральный 3D-стенд */
 #canvas-container {
     width: 100%;
     min-height: 400px;
@@ -47,14 +41,12 @@ aside {
     align-items: center;
 }
 
-/* Неоновые заголовки */
 h2 {
     font-size: 1.2rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 2px;
     border-bottom: 2px solid #9d4edd;
-    /* Фиолетовая полоса */
     padding-bottom: 8px;
     margin-bottom: 5px;
     text-shadow: 0 0 10px rgba(157, 78, 221, 0.5);
@@ -78,7 +70,6 @@ h2 {
 .menu-btn:hover {
     background: rgba(157, 78, 221, 0.25);
     border-color: #00d2ff;
-    /* Смена на голубой при наведении */
     box-shadow: 0 0 15px rgba(157, 78, 221, 0.3);
 }
 
@@ -115,7 +106,6 @@ h2 {
     font-size: 1.4rem;
     font-weight: bold;
     color: #00d2ff;
-    /* Голубой неон */
     text-align: center;
     padding: 12px;
     background: rgba(0, 210, 255, 0.03);
@@ -124,7 +114,6 @@ h2 {
     text-shadow: 0 0 10px rgba(0, 210, 255, 0.4);
 }
 
-/* Ссылки на магазины */
 .shop-link {
     font-size: 0.8rem;
     color: #7a82b8;
@@ -181,7 +170,6 @@ h2 {
 
 #close-modal:hover {
     color: #ff007f;
-    /* Розовый неон */
 }
 
 #products-list {
@@ -192,7 +180,6 @@ h2 {
     flex-grow: 1;
 }
 
-/* Карточки в каталоге */
 .product-card {
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.05);
@@ -236,7 +223,6 @@ h2 {
     background: #7209b7;
 }
 
-/* Тег сокета */
 .socket-tag {
     background: #9d4edd;
     padding: 2px 6px;
@@ -247,240 +233,13 @@ h2 {
     display: inline-block;
 }
 
-@media (max-width: 968px) {
-    #app {
-        /* НА ТЕЛЕФОНАХ: Все панели превращаются в одну колонку и встают друг под друга */
-        grid-template-columns: 1fr;
-        grid-template-rows: auto auto auto;
-        height: auto;
-        overflow-y: auto;
-    }
-
-    aside {
-        backdrop-filter: none;
-        background: #0e102e;
-        box-shadow: none;
-        height: auto;
-        padding: 15px;
-    }
-
-    /* Кнопки меню слева выстраиваются в аккуратную плитку-сетку */
-    #sidebar-left {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-        gap: 10px;
-    }
-
-    .menu-btn {
-        padding: 10px 12px;
-        font-size: 0.85rem;
-        justify-content: center;
-        text-align: center;
-    }
-
-    .menu-btn::after {
-        display: none;
-        /* Убираем стрелочки, на смартфонах они не нужны */
-    }
-
-    #canvas-container {
-        min-height: 220px;
-        height: 30vh;
-        border-top: 1px solid rgba(255, 255, 255, 0.05);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .modal-content {
-        width: 95%;
-        padding: 15px;
-        max-height: 90vh;
-    }
-
-    .filter-bar {
-        flex-direction: column !important;
-        align-items: stretch !important;
-        gap: 10px !important;
-    }
-}
-
-::-webkit-scrollbar {
-    width: 5px;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #9d4edd;
-    border-radius: 4px;
-}
-
-/* =============================================
-   МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ
-   ============================================= */
-#auth-modal {
-    display: none;
-    /* скрыто по умолчанию, показываем через JS */
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(5, 6, 15, 0.85);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    justify-content: center;
-    align-items: center;
-    z-index: 200;
-    /* выше основной модалки */
-    animation: authFadeIn 0.3s ease;
-}
-
-#auth-modal.show {
+#auth-buttons {
     display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
 }
 
-#auth-modal .modal-content {
-    background: #121432;
-    border: 2px solid #9d4edd;
-    box-shadow: 0 0 40px rgba(157, 78, 221, 0.4);
-    width: 400px;
-    max-width: 92%;
-    padding: 30px 25px;
-    border-radius: 12px;
-    position: relative;
-    color: #f0f3ff;
-    animation: authSlideIn 0.3s ease;
-}
-
-/* Крестик закрытия */
-#auth-modal .close-auth-btn {
-    position: absolute;
-    top: 12px;
-    right: 18px;
-    font-size: 28px;
-    color: #7a82b8;
-    cursor: pointer;
-    transition: color 0.2s;
-    line-height: 1;
-}
-
-#auth-modal .close-auth-btn:hover {
-    color: #ff007f;
-}
-
-/* Заголовок */
-#auth-modal h2 {
-    font-size: 1.4rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    border-bottom: 2px solid #9d4edd;
-    padding-bottom: 8px;
-    margin-bottom: 20px;
-    text-shadow: 0 0 10px rgba(157, 78, 221, 0.5);
-    color: #f0f3ff;
-}
-
-/* Поля ввода */
-#auth-modal input[type="email"],
-#auth-modal input[type="password"] {
-    width: 100%;
-    padding: 12px 14px;
-    margin: 8px 0 12px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 8px;
-    color: #f0f3ff;
-    font-size: 1rem;
-    transition: border-color 0.3s;
-    box-sizing: border-box;
-}
-
-#auth-modal input:focus {
-    outline: none;
-    border-color: #9d4edd;
-    box-shadow: 0 0 10px rgba(157, 78, 221, 0.2);
-}
-
-/* Кнопка отправки */
-#auth-modal #auth-submit-btn {
-    width: 100%;
-    padding: 14px;
-    background: #9d4edd;
-    border: none;
-    border-radius: 8px;
-    color: #fff;
-    font-weight: 700;
-    font-size: 1.1rem;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-top: 12px;
-    text-transform: uppercase;
-}
-
-#auth-modal #auth-submit-btn:hover {
-    background: #7209b7;
-    box-shadow: 0 0 20px rgba(157, 78, 221, 0.4);
-}
-
-/* Ссылка переключения режима */
-#auth-modal #auth-toggle-link {
-    text-align: center;
-    margin-top: 16px;
-    font-size: 0.95rem;
-    color: #7a82b8;
-}
-
-#auth-modal #auth-toggle-link a {
-    color: #00d2ff;
-    text-decoration: none;
-    cursor: pointer;
-    border-bottom: 1px dashed transparent;
-    transition: border-color 0.2s;
-}
-
-#auth-modal #auth-toggle-link a:hover {
-    border-color: #00d2ff;
-}
-
-/* Сообщение об ошибке/успехе */
-#auth-modal #auth-message {
-    text-align: center;
-    font-size: 0.95rem;
-    min-height: 24px;
-    margin-top: 10px;
-    color: #ff007f;
-}
-
-#auth-modal #auth-message.success {
-    color: #00d2ff;
-}
-
-/* Анимации */
-@keyframes authFadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
-}
-
-@keyframes authSlideIn {
-    from {
-        transform: scale(0.95) translateY(10px);
-        opacity: 0;
-    }
-
-    to {
-        transform: scale(1) translateY(0);
-        opacity: 1;
-    }
-}
-
-/* =============================================
-   КНОПКИ АВТОРИЗАЦИИ (в шапке или на панели)
-   ============================================= */
 .auth-btn {
     background: rgba(157, 78, 221, 0.15);
     color: #f0f3ff;
@@ -511,100 +270,145 @@ h2 {
     border-color: #ff007f;
 }
 
-/* Группа кнопок (например, в правом верхнем углу) */
-#auth-buttons {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-/* =============================================
-   АДАПТИВНОСТЬ ДЛЯ ТЕЛЕФОНОВ
-   ============================================= */
-@media (max-width: 480px) {
-    #auth-modal .modal-content {
-        padding: 20px 16px;
-        width: 96%;
-    }
-
-    #auth-modal h2 {
-        font-size: 1.2rem;
-    }
-
-    #auth-modal input {
-        padding: 10px 12px;
-        font-size: 0.95rem;
-    }
-
-    #auth-modal #auth-submit-btn {
-        padding: 12px;
-        font-size: 1rem;
-    }
-
-    #auth-modal .close-auth-btn {
-        font-size: 26px;
-        top: 8px;
-        right: 12px;
-    }
-
-    .auth-btn {
-        padding: 6px 14px;
-        font-size: 0.8rem;
-    }
-
-    #auth-buttons {
-        gap: 6px;
-    }
-}
-
-/* Модальные окна (затемнение) */
-#login-modal,
-#register-modal {
+/* Модальные окна авторизации */
+.modal {
     display: none;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(4px);
-    justify-content: center;
-    align-items: center;
     z-index: 1000;
 }
 
-#login-modal.show,
-#register-modal.show {
-    display: flex;
+.modal.show {
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
 }
 
-/* Содержимое модалок */
+.modal-overlay {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 11, 30, 0.8);
+    backdrop-filter: blur(4px);
+    cursor: pointer;
+}
+
 .modal-content {
     background: #121432;
-    padding: 30px;
+    padding: 30px 35px;
     border-radius: 12px;
-    max-width: 400px;
-    width: 90%;
+    max-width: 420px;
+    width: 92%;
     position: relative;
-    border: 1px solid #9d4edd;
-    box-shadow: 0 0 30px rgba(157, 78, 221, 0.3);
+    border: 2px solid #9d4edd;
+    box-shadow: 0 0 40px rgba(157, 78, 221, 0.3);
+    cursor: default;
+    animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
 .modal-close {
     position: absolute;
-    top: 10px;
-    right: 15px;
+    top: 12px;
+    right: 18px;
     font-size: 28px;
-    cursor: pointer;
     color: #7a82b8;
+    cursor: pointer;
+    transition: color 0.2s;
 }
 
 .modal-close:hover {
     color: #ff007f;
 }
 
-/* Индикатор загрузки внутри кнопки */
+.modal-content h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border-bottom: 2px solid #9d4edd;
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px rgba(157, 78, 221, 0.5);
+    color: #f0f3ff;
+}
+
+.modal-content input {
+    width: 100%;
+    padding: 12px 14px;
+    margin: 8px 0 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    color: #f0f3ff;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+    box-sizing: border-box;
+}
+
+.modal-content input:focus {
+    outline: none;
+    border-color: #9d4edd;
+    box-shadow: 0 0 10px rgba(157, 78, 221, 0.2);
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 14px;
+    background: #9d4edd;
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+    text-transform: uppercase;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #7209b7;
+    box-shadow: 0 0 20px rgba(157, 78, 221, 0.4);
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.form-message {
+    text-align: center;
+    font-size: 0.95rem;
+    min-height: 24px;
+    margin-top: 12px;
+}
+
+.form-message.success {
+    color: #00d2ff;
+}
+
+.form-message.error {
+    color: #ff007f;
+}
+
 .btn-loading {
     pointer-events: none;
     opacity: 0.7;
@@ -625,4 +429,103 @@ h2 {
     100% {
         transform: rotate(360deg);
     }
+}
+
+/* Адаптивность */
+@media (max-width: 968px) {
+    #app {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+        height: auto;
+        overflow-y: auto;
+    }
+
+    aside {
+        backdrop-filter: none;
+        background: #0e102e;
+        box-shadow: none;
+        height: auto;
+        padding: 15px;
+    }
+
+    #sidebar-left {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 10px;
+    }
+
+    .menu-btn {
+        padding: 10px 12px;
+        font-size: 0.85rem;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .menu-btn::after {
+        display: none;
+    }
+
+    #canvas-container {
+        min-height: 220px;
+        height: 30vh;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .modal-content {
+        width: 95%;
+        padding: 15px;
+        max-height: 90vh;
+    }
+
+    .filter-bar {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-content {
+        padding: 20px 16px;
+        width: 96%;
+    }
+
+    .modal-content h2 {
+        font-size: 1.2rem;
+    }
+
+    .modal-content input {
+        padding: 10px 12px;
+        font-size: 0.95rem;
+    }
+
+    .btn-primary {
+        padding: 12px;
+        font-size: 1rem;
+    }
+
+    .modal-close {
+        font-size: 26px;
+        top: 8px;
+        right: 12px;
+    }
+
+    .auth-btn {
+        padding: 6px 14px;
+        font-size: 0.8rem;
+    }
+
+    #auth-buttons {
+        gap: 6px;
+    }
+}
+
+::-webkit-scrollbar {
+    width: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #9d4edd;
+    border-radius: 4px;
 }
