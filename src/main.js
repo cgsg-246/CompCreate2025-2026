@@ -14,21 +14,43 @@ function getActiveBuild() {
 async function loadSavedBuilds() {
     const token = sessionStorage.getItem('auth_token');
     let loadedBuilds = [];
+
     if (token) {
         try {
             const data = await apiRequest('/api/builds');
             if (data && data.builds) {
                 loadedBuilds = data.builds;
+                loadedBuilds = loadedBuilds.map(b => {
+                    if (!b.name)
+                        b.name = 'Моя сборка';
+                    return b;
+                });
                 localStorage.setItem('cached_builds', JSON.stringify(loadedBuilds));
+                console.log('Загружены сборки с сервера:', loadedBuilds);
             }
         } catch (e) {
+            console.warn('Не удалось загрузить с сервера, берём из кэша', e);
             const cached = localStorage.getItem('cached_builds');
-            if (cached) loadedBuilds = JSON.parse(cached);
+            if (cached) {
+                loadedBuilds = JSON.parse(cached);
+                loadedBuilds = loadedBuilds.map(b => {
+                    if (!b.name)
+                        b.name = 'Моя сборка';
+                    return b;
+                });
+            }
         }
     } else {
         const guest = sessionStorage.getItem('guest_builds');
-        if (guest) loadedBuilds = JSON.parse(guest);
+        if (guest) {
+            loadedBuilds = JSON.parse(guest);
+            loadedBuilds = loadedBuilds.map(b => {
+                if (!b.name) b.name = 'Моя сборка';
+                return b;
+            });
+        }
     }
+
     if (loadedBuilds.length === 0) {
         const defaultBuild = {
             id: `build_${Date.now()}`,
@@ -46,12 +68,20 @@ async function loadSavedBuilds() {
                     method: 'POST',
                     body: JSON.stringify({ name: defaultBuild.name, components: defaultBuild.components })
                 });
-                if (newBuild && newBuild.build) loadedBuilds[0] = newBuild.build;
-            } catch (e) { }
+                if (newBuild && newBuild.build) {
+                    loadedBuilds[0] = newBuild.build;
+                    if (!loadedBuilds[0].name)
+                        loadedBuilds[0].name = 'Моя сборка';
+                }
+            } catch (e) {
+                console.warn('Не удалось создать дефолтную сборку на сервере', e);
+            }
         }
         localStorage.setItem('cached_builds', JSON.stringify(loadedBuilds));
-        if (!token) sessionStorage.setItem('guest_builds', JSON.stringify(loadedBuilds));
+        if (!token)
+            sessionStorage.setItem('guest_builds', JSON.stringify(loadedBuilds));
     }
+
     builds = loadedBuilds;
     activeBuildId = builds[0]?.id || null;
     const savedId = localStorage.getItem('active_build_id');
@@ -63,7 +93,6 @@ async function loadSavedBuilds() {
 }
 
 function applyActiveBuild() {
-    // Убедимся, что активная сборка существует
     let active = getActiveBuild();
     if (!active) {
         const newId = `build_${Date.now()}`;
@@ -82,7 +111,10 @@ function applyActiveBuild() {
         saveBuildsToStorage();
     }
 
-    // Гарантируем, что components — объект
+    if (active && !active.name) {
+        active.name = 'Моя сборка';
+    }
+
     const comps = (active && active.components && typeof active.components === 'object')
         ? active.components
         : {
@@ -155,9 +187,13 @@ async function createBuild(name) {
                 const idx = builds.findIndex(b => b.id === newBuild.id);
                 builds[idx] = result.build;
                 activeBuildId = result.build.id;
+                if (!builds[idx].name)
+                    builds[idx].name = newBuild.name;
                 await saveBuildsToStorage();
             }
-        } catch (e) { }
+        } catch (e) {
+            console.warn('Не удалось создать сборку на сервере', e);
+        }
     }
     applyActiveBuild();
     renderBuildSelector();
@@ -168,7 +204,8 @@ async function deleteBuild(buildId) {
         alert('Нельзя удалить последнюю сборку');
         return;
     }
-    if (!confirm(`Удалить сборку "${builds.find(b => b.id === buildId)?.name}"?`)) return;
+    if (!confirm(`Удалить сборку "${builds.find(b => b.id === buildId)?.name || 'Без имени'}"?`))
+        return;
     builds = builds.filter(b => b.id !== buildId);
     if (activeBuildId === buildId) {
         activeBuildId = builds[0]?.id || null;
@@ -178,7 +215,9 @@ async function deleteBuild(buildId) {
     if (token) {
         try {
             await apiRequest(`/api/builds/${buildId}`, { method: 'DELETE' });
-        } catch (e) { }
+        } catch (e) {
+            console.warn('Не удалось удалить сборку на сервере', e);
+        }
     }
     applyActiveBuild();
     renderBuildSelector();
@@ -186,7 +225,8 @@ async function deleteBuild(buildId) {
 
 async function renameBuild(buildId, newName) {
     const build = builds.find(b => b.id === buildId);
-    if (!build) return;
+    if (!build)
+        return;
     build.name = newName;
     await saveBuildsToStorage();
     await updateBuildOnServer(buildId, { name: newName });
@@ -195,13 +235,16 @@ async function renameBuild(buildId, newName) {
 
 function renderBuildSelector() {
     const container = document.getElementById('build-selector');
-    if (!container) return;
+    if (!container)
+        return;
+
     let html = `
         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px;">
             <select id="build-select" style="flex:1; padding:8px; background:#0a0b1e; color:white; border:1px solid #9d4edd; border-radius:4px;">
     `;
     builds.forEach(b => {
-        html += `<option value="${b.id}" ${b.id === activeBuildId ? 'selected' : ''}>${b.name}</option>`;
+        const displayName = b.name || 'Без имени';
+        html += `<option value="${b.id}" ${b.id === activeBuildId ? 'selected' : ''}>${displayName}</option>`;
     });
     html += `
             </select>
@@ -211,24 +254,28 @@ function renderBuildSelector() {
         </div>
     `;
     container.innerHTML = html;
+
     document.getElementById('build-select').addEventListener('change', (e) => {
         switchBuild(e.target.value);
     });
     document.getElementById('build-new-btn').addEventListener('click', () => {
         const name = prompt('Введите название новой сборки:', 'Новая сборка');
-        if (name !== null) createBuild(name);
+        if (name !== null)
+            createBuild(name);
     });
     document.getElementById('build-rename-btn').addEventListener('click', () => {
         const active = getActiveBuild();
-        if (!active) return;
-        const newName = prompt('Введите новое название:', active.name);
+        if (!active)
+            return;
+        const newName = prompt('Введите новое название:', active.name || 'Моя сборка');
         if (newName !== null && newName.trim() !== '') {
             renameBuild(active.id, newName.trim());
         }
     });
     document.getElementById('build-delete-btn').addEventListener('click', () => {
         const active = getActiveBuild();
-        if (!active) return;
+        if (!active)
+            return;
         deleteBuild(active.id);
     });
 }
@@ -238,28 +285,40 @@ function updateAuthUI() {
     const loginBtn = document.getElementById('login-btn');
     const registerBtn = document.getElementById('register-btn');
     const logoutBtn = document.getElementById('logout-btn');
-    if (loginBtn) loginBtn.style.display = isAuth ? 'none' : 'inline-block';
-    if (registerBtn) registerBtn.style.display = isAuth ? 'none' : 'inline-block';
-    if (logoutBtn) logoutBtn.style.display = isAuth ? 'inline-block' : 'none';
+    if (loginBtn)
+        loginBtn.style.display = isAuth ? 'none' : 'inline-block';
+    if (registerBtn)
+        registerBtn.style.display = isAuth ? 'none' : 'inline-block';
+    if (logoutBtn)
+        logoutBtn.style.display = isAuth ? 'inline-block' : 'none';
 }
 
 function openModal(id) {
     const modal = document.getElementById(id);
-    if (modal) modal.classList.add('show');
+    if (modal)
+        modal.classList.add('show');
 }
 
 function closeLoginModal() {
     const modal = document.getElementById('login-modal');
-    if (modal) modal.classList.remove('show');
+    if (modal)
+        modal.classList.remove('show');
     const msg = document.getElementById('login-message');
-    if (msg) { msg.textContent = ''; msg.className = 'form-message'; }
+    if (msg) {
+        msg.textContent = '';
+        msg.className = 'form-message';
+    }
 }
 
 function closeRegisterModal() {
     const modal = document.getElementById('register-modal');
-    if (modal) modal.classList.remove('show');
+    if (modal)
+        modal.classList.remove('show');
     const msg = document.getElementById('register-message');
-    if (msg) { msg.textContent = ''; msg.className = 'form-message'; }
+    if (msg) {
+        msg.textContent = '';
+        msg.className = 'form-message';
+    }
 }
 
 window.closeLoginModal = closeLoginModal;
@@ -277,8 +336,10 @@ document.getElementById('login-close').addEventListener('click', closeLoginModal
 document.getElementById('register-close').addEventListener('click', closeRegisterModal);
 
 window.addEventListener('click', (e) => {
-    if (e.target === document.getElementById('login-modal')) closeLoginModal();
-    if (e.target === document.getElementById('register-modal')) closeRegisterModal();
+    if (e.target === document.getElementById('login-modal'))
+        closeLoginModal();
+    if (e.target === document.getElementById('register-modal'))
+        closeRegisterModal();
 });
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
@@ -374,7 +435,8 @@ document.getElementById('logout-btn').addEventListener('click', () => {
 async function handleProductSelection(categoryKey, product) {
     const fixKey = categoryKey === 'power' ? 'psu' : categoryKey;
     const active = getActiveBuild();
-    if (!active) return;
+    if (!active)
+        return;
     active.components[fixKey] = product;
     renderSelectedComponents(active.components);
     updateTotalPriceAndAI();
@@ -385,7 +447,8 @@ async function handleProductSelection(categoryKey, product) {
 
 async function handleProductDeletion(categoryKey) {
     const active = getActiveBuild();
-    if (!active) return;
+    if (!active)
+        return;
     active.components[categoryKey] = null;
     renderSelectedComponents(active.components);
     updateTotalPriceAndAI();
@@ -396,15 +459,18 @@ async function handleProductDeletion(categoryKey) {
 
 async function updateTotalPriceAndAI() {
     const active = getActiveBuild();
-    if (!active) return;
+    if (!active)
+        return;
     const comps = active.components || {};
     const total = Object.values(comps).reduce((sum, item) => {
         return sum + (item ? (item.price_approx || 0) : 0);
     }, 0);
     const priceDisplay = document.getElementById('total-price');
-    if (priceDisplay) priceDisplay.innerText = `Итого: ${total.toLocaleString()} ₽`;
+    if (priceDisplay)
+        priceDisplay.innerText = `Итого: ${total.toLocaleString()} ₽`;
     const aiBox = document.getElementById('ai-status');
-    if (aiBox) aiBox.innerHTML = '<div style="color: #00d2ff">Проверка готовности сборки</div>';
+    if (aiBox)
+        aiBox.innerHTML = '<div style="color: #00d2ff">Проверка готовности сборки</div>';
     const aiRes = await analyzeBuildWithAI(comps);
     if (aiBox) {
         aiBox.innerHTML = `
@@ -431,7 +497,8 @@ async function startApp() {
     try {
         init3DScene();
         const response = await fetch('./assets/database.json');
-        if (!response.ok) throw new Error('Не удалось загрузить базу данных');
+        if (!response.ok)
+            throw new Error('Не удалось загрузить базу данных');
         const hardwareDatabase = await response.json();
         initUI(hardwareDatabase, handleProductSelection, handleProductDeletion, handleProductPreview);
         await loadSavedBuilds();
