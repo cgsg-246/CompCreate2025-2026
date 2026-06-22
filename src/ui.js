@@ -1,3 +1,4 @@
+// src/ui.js — полный исправленный файл
 import { filterAndSortProducts } from './filters.js';
 
 let currentDB = null;
@@ -119,7 +120,12 @@ function applyFiltersAndRender() {
 
 export function renderSelectedComponents(currentBuild) {
     const container = document.getElementById('selected-components-list');
-    if (!container) return;
+    if (!container)
+        return;
+    if (!currentBuild || typeof currentBuild !== 'object') {
+        container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 10px;">Нет выбранных деталей</p>';
+        return;
+    }
 
     container.innerHTML = '';
 

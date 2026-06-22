@@ -63,7 +63,8 @@ async function loadSavedBuilds() {
 }
 
 function applyActiveBuild() {
-    const active = getActiveBuild();
+    // Убедимся, что активная сборка существует
+    let active = getActiveBuild();
     if (!active) {
         const newId = `build_${Date.now()}`;
         const newBuild = {
@@ -77,11 +78,21 @@ function applyActiveBuild() {
         };
         builds.push(newBuild);
         activeBuildId = newId;
+        active = newBuild;
         saveBuildsToStorage();
     }
-    const comps = getActiveBuild().components;
+
+    // Гарантируем, что components — объект
+    const comps = (active && active.components && typeof active.components === 'object')
+        ? active.components
+        : {
+            case: null, motherboard: null, cpu: null, cooler: null,
+            ram: null, gpu: null, storage: null, psu: null, case_fans: null
+        };
+
     renderSelectedComponents(comps);
     updateTotalPriceAndAI();
+
     const firstItem = Object.values(comps).find(v => v !== null);
     if (firstItem) {
         addComponentTo3D('', firstItem.sketchfabId);
@@ -251,6 +262,9 @@ function closeRegisterModal() {
     if (msg) { msg.textContent = ''; msg.className = 'form-message'; }
 }
 
+window.closeLoginModal = closeLoginModal;
+window.closeRegisterModal = closeRegisterModal;
+
 document.getElementById('login-btn').addEventListener('click', () => {
     closeRegisterModal();
     openModal('login-modal');
@@ -383,7 +397,7 @@ async function handleProductDeletion(categoryKey) {
 async function updateTotalPriceAndAI() {
     const active = getActiveBuild();
     if (!active) return;
-    const comps = active.components;
+    const comps = active.components || {};
     const total = Object.values(comps).reduce((sum, item) => {
         return sum + (item ? (item.price_approx || 0) : 0);
     }, 0);
