@@ -1,3 +1,4 @@
+
 import { apiRequest } from './apiClient.js';
 
 export function isAuthenticated() {

@@ -529,3 +529,16 @@ h2 {
     background: #9d4edd;
     border-radius: 4px;
 }
+
+#build-selector select {
+    background: #0a0b1e;
+    color: #f0f3ff;
+    border: 1px solid #9d4edd;
+    padding: 8px;
+    border-radius: 4px;
+    outline: none;
+}
+
+#build-selector select:focus {
+    border-color: #00d2ff;
+}

@@ -4,69 +4,222 @@ import { analyzeBuildWithAI } from './ai.js';
 import { login, register, logout, isAuthenticated } from './auth.js';
 import { apiRequest } from './apiClient.js';
 
-const currentBuild = {
-    case: null,
-    motherboard: null,
-    cpu: null,
-    cooler: null,
-    ram: null,
-    gpu: null,
-    storage: null,
-    psu: null,
-    case_fans: null
-};
+let builds = [];
+let activeBuildId = null;
 
-async function loadSavedBuild() {
+function getActiveBuild() {
+    return builds.find(b => b.id === activeBuildId) || null;
+}
+
+async function loadSavedBuilds() {
     const token = sessionStorage.getItem('auth_token');
-    let build = null;
-
+    let loadedBuilds = [];
     if (token) {
         try {
-            const data = await apiRequest('/api/build');
-            if (data && data.build) {
-                build = data.build;
-                localStorage.setItem('cached_build', JSON.stringify(build));
-                console.log('Загружена сборка с сервера');
+            const data = await apiRequest('/api/builds');
+            if (data && data.builds) {
+                loadedBuilds = data.builds;
+                localStorage.setItem('cached_builds', JSON.stringify(loadedBuilds));
             }
         } catch (e) {
-            console.warn('Не удалось загрузить с сервера, берём из кэша', e);
-            const cached = localStorage.getItem('cached_build');
-            if (cached) build = JSON.parse(cached);
+            const cached = localStorage.getItem('cached_builds');
+            if (cached) loadedBuilds = JSON.parse(cached);
         }
     } else {
-        const guest = sessionStorage.getItem('guest_build');
-        if (guest) build = JSON.parse(guest);
+        const guest = sessionStorage.getItem('guest_builds');
+        if (guest) loadedBuilds = JSON.parse(guest);
     }
-
-    if (build) {
-        Object.keys(build).forEach(key => {
-            if (build[key]) {
-                currentBuild[key] = build[key];
-                addComponentTo3D(key, build[key].sketchfabId);
-            }
-        });
-        renderSelectedComponents(currentBuild);
-        updateTotalPriceAndAI();
+    if (loadedBuilds.length === 0) {
+        const defaultBuild = {
+            id: `build_${Date.now()}`,
+            name: 'Моя сборка',
+            components: {
+                case: null, motherboard: null, cpu: null, cooler: null,
+                ram: null, gpu: null, storage: null, psu: null, case_fans: null
+            },
+            createdAt: new Date().toISOString()
+        };
+        loadedBuilds = [defaultBuild];
+        if (token) {
+            try {
+                const newBuild = await apiRequest('/api/builds', {
+                    method: 'POST',
+                    body: JSON.stringify({ name: defaultBuild.name, components: defaultBuild.components })
+                });
+                if (newBuild && newBuild.build) loadedBuilds[0] = newBuild.build;
+            } catch (e) { }
+        }
+        localStorage.setItem('cached_builds', JSON.stringify(loadedBuilds));
+        if (!token) sessionStorage.setItem('guest_builds', JSON.stringify(loadedBuilds));
     }
+    builds = loadedBuilds;
+    activeBuildId = builds[0]?.id || null;
+    const savedId = localStorage.getItem('active_build_id');
+    if (savedId && builds.some(b => b.id === savedId)) {
+        activeBuildId = savedId;
+    }
+    applyActiveBuild();
     updateAuthUI();
 }
 
-async function saveBuildToStorage() {
+function applyActiveBuild() {
+    const active = getActiveBuild();
+    if (!active) {
+        const newId = `build_${Date.now()}`;
+        const newBuild = {
+            id: newId,
+            name: 'Новая сборка',
+            components: {
+                case: null, motherboard: null, cpu: null, cooler: null,
+                ram: null, gpu: null, storage: null, psu: null, case_fans: null
+            },
+            createdAt: new Date().toISOString()
+        };
+        builds.push(newBuild);
+        activeBuildId = newId;
+        saveBuildsToStorage();
+    }
+    const comps = getActiveBuild().components;
+    renderSelectedComponents(comps);
+    updateTotalPriceAndAI();
+    const firstItem = Object.values(comps).find(v => v !== null);
+    if (firstItem) {
+        addComponentTo3D('', firstItem.sketchfabId);
+    } else {
+        addComponentTo3D('', null);
+    }
+    renderBuildSelector();
+}
+
+async function saveBuildsToStorage() {
+    const token = sessionStorage.getItem('auth_token');
+    const dataToStore = builds.map(b => ({ ...b }));
+    if (token) {
+        localStorage.setItem('cached_builds', JSON.stringify(dataToStore));
+    } else {
+        sessionStorage.setItem('guest_builds', JSON.stringify(dataToStore));
+    }
+}
+
+async function updateBuildOnServer(buildId, updates) {
+    const token = sessionStorage.getItem('auth_token');
+    if (!token) return;
+    try {
+        await apiRequest(`/api/builds/${buildId}`, {
+            method: 'PUT',
+            body: JSON.stringify(updates)
+        });
+    } catch (e) {
+        console.warn('Ошибка обновления сборки на сервере', e);
+    }
+}
+
+function switchBuild(buildId) {
+    activeBuildId = buildId;
+    localStorage.setItem('active_build_id', buildId);
+    applyActiveBuild();
+}
+
+async function createBuild(name) {
+    const newBuild = {
+        id: `build_${Date.now()}`,
+        name: name || 'Новая сборка',
+        components: {
+            case: null, motherboard: null, cpu: null, cooler: null,
+            ram: null, gpu: null, storage: null, psu: null, case_fans: null
+        },
+        createdAt: new Date().toISOString()
+    };
+    builds.push(newBuild);
+    activeBuildId = newBuild.id;
+    await saveBuildsToStorage();
     const token = sessionStorage.getItem('auth_token');
     if (token) {
-        localStorage.setItem('cached_build', JSON.stringify(currentBuild));
         try {
-            await apiRequest('/api/build', {
+            const result = await apiRequest('/api/builds', {
                 method: 'POST',
-                body: JSON.stringify({ build: currentBuild })
+                body: JSON.stringify({ name: newBuild.name, components: newBuild.components })
             });
-            console.log('Сборка синхронизирована с сервером');
-        } catch (e) {
-            console.warn('Ошибка синхронизации:', e);
-        }
-    } else {
-        sessionStorage.setItem('guest_build', JSON.stringify(currentBuild));
+            if (result && result.build) {
+                const idx = builds.findIndex(b => b.id === newBuild.id);
+                builds[idx] = result.build;
+                activeBuildId = result.build.id;
+                await saveBuildsToStorage();
+            }
+        } catch (e) { }
     }
+    applyActiveBuild();
+    renderBuildSelector();
+}
+
+async function deleteBuild(buildId) {
+    if (builds.length <= 1) {
+        alert('Нельзя удалить последнюю сборку');
+        return;
+    }
+    if (!confirm(`Удалить сборку "${builds.find(b => b.id === buildId)?.name}"?`)) return;
+    builds = builds.filter(b => b.id !== buildId);
+    if (activeBuildId === buildId) {
+        activeBuildId = builds[0]?.id || null;
+    }
+    await saveBuildsToStorage();
+    const token = sessionStorage.getItem('auth_token');
+    if (token) {
+        try {
+            await apiRequest(`/api/builds/${buildId}`, { method: 'DELETE' });
+        } catch (e) { }
+    }
+    applyActiveBuild();
+    renderBuildSelector();
+}
+
+async function renameBuild(buildId, newName) {
+    const build = builds.find(b => b.id === buildId);
+    if (!build) return;
+    build.name = newName;
+    await saveBuildsToStorage();
+    await updateBuildOnServer(buildId, { name: newName });
+    renderBuildSelector();
+}
+
+function renderBuildSelector() {
+    const container = document.getElementById('build-selector');
+    if (!container) return;
+    let html = `
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px;">
+            <select id="build-select" style="flex:1; padding:8px; background:#0a0b1e; color:white; border:1px solid #9d4edd; border-radius:4px;">
+    `;
+    builds.forEach(b => {
+        html += `<option value="${b.id}" ${b.id === activeBuildId ? 'selected' : ''}>${b.name}</option>`;
+    });
+    html += `
+            </select>
+            <button id="build-new-btn" class="auth-btn" style="padding:6px 12px;">+</button>
+            <button id="build-rename-btn" class="auth-btn" style="padding:6px 12px;">✏️</button>
+            <button id="build-delete-btn" class="auth-btn" style="padding:6px 12px;">🗑️</button>
+        </div>
+    `;
+    container.innerHTML = html;
+    document.getElementById('build-select').addEventListener('change', (e) => {
+        switchBuild(e.target.value);
+    });
+    document.getElementById('build-new-btn').addEventListener('click', () => {
+        const name = prompt('Введите название новой сборки:', 'Новая сборка');
+        if (name !== null) createBuild(name);
+    });
+    document.getElementById('build-rename-btn').addEventListener('click', () => {
+        const active = getActiveBuild();
+        if (!active) return;
+        const newName = prompt('Введите новое название:', active.name);
+        if (newName !== null && newName.trim() !== '') {
+            renameBuild(active.id, newName.trim());
+        }
+    });
+    document.getElementById('build-delete-btn').addEventListener('click', () => {
+        const active = getActiveBuild();
+        if (!active) return;
+        deleteBuild(active.id);
+    });
 }
 
 function updateAuthUI() {
@@ -102,24 +255,17 @@ document.getElementById('login-btn').addEventListener('click', () => {
     closeRegisterModal();
     openModal('login-modal');
 });
-
 document.getElementById('register-btn').addEventListener('click', () => {
     closeLoginModal();
     openModal('register-modal');
 });
-
 document.getElementById('login-close').addEventListener('click', closeLoginModal);
 document.getElementById('register-close').addEventListener('click', closeRegisterModal);
 
 window.addEventListener('click', (e) => {
-    if (e.target === document.getElementById('login-modal')) {
-        closeLoginModal();
-    }
-    if (e.target === document.getElementById('register-modal')) {
-        closeRegisterModal();
-    }
+    if (e.target === document.getElementById('login-modal')) closeLoginModal();
+    if (e.target === document.getElementById('register-modal')) closeRegisterModal();
 });
-
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         closeLoginModal();
@@ -133,20 +279,17 @@ document.getElementById('login-submit').addEventListener('click', async function
     const password = document.getElementById('login-password').value.trim();
     const submitBtn = this;
     const msgEl = document.getElementById('login-message');
-
     if (!email || !password) {
         msgEl.textContent = 'Заполните все поля';
         msgEl.className = 'form-message error';
         return;
     }
-
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Вход';
+    submitBtn.textContent = 'Вход...';
     submitBtn.classList.add('btn-loading');
-
     try {
         await login(email, password);
-        msgEl.textContent = 'Вход выполнен';
+        msgEl.textContent = 'Вход выполнен!';
         msgEl.className = 'form-message success';
         setTimeout(async () => {
             closeLoginModal();
@@ -155,11 +298,11 @@ document.getElementById('login-submit').addEventListener('click', async function
             submitBtn.disabled = false;
             submitBtn.textContent = 'Войти';
             submitBtn.classList.remove('btn-loading');
-            await loadSavedBuild();
+            await loadSavedBuilds();
             updateAuthUI();
         }, 1000);
     } catch (e) {
-        msgEl.textContent = '' + e.message;
+        msgEl.textContent = e.message;
         msgEl.className = 'form-message error';
         submitBtn.disabled = false;
         submitBtn.textContent = 'Войти';
@@ -173,17 +316,14 @@ document.getElementById('register-submit').addEventListener('click', async funct
     const password = document.getElementById('register-password').value.trim();
     const submitBtn = this;
     const msgEl = document.getElementById('register-message');
-
     if (!email || !password) {
         msgEl.textContent = 'Заполните все поля';
         msgEl.className = 'form-message error';
         return;
     }
-
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Регистрация';
+    submitBtn.textContent = 'Регистрация...';
     submitBtn.classList.add('btn-loading');
-
     try {
         await register(email, password);
         msgEl.textContent = 'Регистрация успешна!';
@@ -195,11 +335,11 @@ document.getElementById('register-submit').addEventListener('click', async funct
             submitBtn.disabled = false;
             submitBtn.textContent = 'Зарегистрироваться';
             submitBtn.classList.remove('btn-loading');
-            await loadSavedBuild();
+            await loadSavedBuilds();
             updateAuthUI();
         }, 1000);
     } catch (e) {
-        msgEl.textContent = '' + e.message;
+        msgEl.textContent = e.message;
         msgEl.className = 'form-message error';
         submitBtn.disabled = false;
         submitBtn.textContent = 'Зарегистрироваться';
@@ -210,47 +350,48 @@ document.getElementById('register-submit').addEventListener('click', async funct
 document.getElementById('logout-btn').addEventListener('click', () => {
     logout();
     updateAuthUI();
-    Object.keys(currentBuild).forEach(key => currentBuild[key] = null);
-    renderSelectedComponents(currentBuild);
-    updateTotalPriceAndAI();
-    localStorage.removeItem('cached_build');
-    sessionStorage.removeItem('guest_build');
+    localStorage.removeItem('cached_builds');
+    sessionStorage.removeItem('guest_builds');
+    builds = [];
+    loadSavedBuilds();
     alert('Вы вышли из системы');
 });
 
 async function handleProductSelection(categoryKey, product) {
     const fixKey = categoryKey === 'power' ? 'psu' : categoryKey;
-    currentBuild[fixKey] = product;
-    addComponentTo3D(fixKey, product.sketchfabId);
-    renderSelectedComponents(currentBuild);
+    const active = getActiveBuild();
+    if (!active) return;
+    active.components[fixKey] = product;
+    renderSelectedComponents(active.components);
     updateTotalPriceAndAI();
-    await saveBuildToStorage();
+    addComponentTo3D(fixKey, product.sketchfabId);
+    await saveBuildsToStorage();
+    await updateBuildOnServer(active.id, { components: active.components });
 }
 
 async function handleProductDeletion(categoryKey) {
-    currentBuild[categoryKey] = null;
-    addComponentTo3D(categoryKey, null);
-    renderSelectedComponents(currentBuild);
+    const active = getActiveBuild();
+    if (!active) return;
+    active.components[categoryKey] = null;
+    renderSelectedComponents(active.components);
     updateTotalPriceAndAI();
-    await saveBuildToStorage();
+    addComponentTo3D(categoryKey, null);
+    await saveBuildsToStorage();
+    await updateBuildOnServer(active.id, { components: active.components });
 }
 
 async function updateTotalPriceAndAI() {
-    const total = Object.values(currentBuild).reduce((sum, item) => {
+    const active = getActiveBuild();
+    if (!active) return;
+    const comps = active.components;
+    const total = Object.values(comps).reduce((sum, item) => {
         return sum + (item ? (item.price_approx || 0) : 0);
     }, 0);
-
     const priceDisplay = document.getElementById('total-price');
-    if (priceDisplay) {
-        priceDisplay.innerText = `Итого: ${total.toLocaleString()} ₽`;
-    }
-
+    if (priceDisplay) priceDisplay.innerText = `Итого: ${total.toLocaleString()} ₽`;
     const aiBox = document.getElementById('ai-status');
-    if (aiBox) {
-        aiBox.innerHTML = '<div style="color: #00d2ff">Проверка готовности сборки...</div>';
-    }
-
-    const aiRes = await analyzeBuildWithAI(currentBuild);
+    if (aiBox) aiBox.innerHTML = '<div style="color: #00d2ff">Проверка готовности сборки</div>';
+    const aiRes = await analyzeBuildWithAI(comps);
     if (aiBox) {
         aiBox.innerHTML = `
             <p><strong>Вердикт ИИ:</strong> ${aiRes.verdict || 'Компоненты успешно состыкованы.'}</p>
@@ -279,7 +420,7 @@ async function startApp() {
         if (!response.ok) throw new Error('Не удалось загрузить базу данных');
         const hardwareDatabase = await response.json();
         initUI(hardwareDatabase, handleProductSelection, handleProductDeletion, handleProductPreview);
-        await loadSavedBuild();
+        await loadSavedBuilds();
         console.log("Конструктор запущен");
     } catch (e) {
         console.error("Ошибка старта:", e);
