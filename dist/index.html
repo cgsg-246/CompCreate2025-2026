@@ -6,41 +6,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D PC Builder AI</title>
     <link rel="stylesheet" href="styles.css">
-    <div id="auth-buttons">
+</head>
+
+<body>
+
+    <div id="auth-buttons" style="position: fixed; top: 10px; right: 20px; z-index: 999;">
         <button id="login-btn" class="auth-btn">Войти</button>
         <button id="register-btn" class="auth-btn">Регистрация</button>
         <button id="logout-btn" class="auth-btn" style="display:none;">Выйти</button>
     </div>
-    <div id="login-modal" style="display:none;">
-        <h2>Вход</h2>
-        <input type="email" id="login-email" placeholder="Email">
-        <input type="password" id="login-password" placeholder="Пароль">
-        <button id="login-submit">Войти</button>
-        <button id="login-close">Закрыть</button>
-    </div>
 
-    <div id="register-modal" style="display:none;">
-        <h2>Регистрация</h2>
-        <input type="email" id="register-email" placeholder="Email">
-        <input type="password" id="register-password" placeholder="Пароль">
-        <button id="register-submit">Зарегистрироваться</button>
-        <button id="register-close">Закрыть</button>
-    </div>
-    <div id="login-modal" style="display:none;">
-        <div class="modal-overlay">
-            <div class="modal-content">
-                <span id="login-close" class="modal-close">&times;</span>
+    <div id="login-modal" class="modal" style="display:none;">
+        <div class="modal-overlay" onclick="closeLoginModal()">
+            <div class="modal-content" onclick="event.stopPropagation();">
+                <span class="modal-close" id="login-close" onclick="closeLoginModal()">&times;</span>
                 <h2>Вход</h2>
-                <input type="email" id="login-email" placeholder="Email" autocomplete="email">
-                <input type="password" id="login-password" placeholder="Пароль" autocomplete="current-password">
-                <button id="login-submit">Войти</button>
-                <div id="login-message" style="color: var(--accent-pink); margin-top: 10px;"></div>
+                <form id="login-form" onsubmit="return false;">
+                    <input type="email" id="login-email" placeholder="Email" autocomplete="email" required>
+                    <input type="password" id="login-password" placeholder="Пароль" autocomplete="current-password"
+                        required>
+                    <button type="submit" id="login-submit" class="btn-primary">Войти</button>
+                    <div id="login-message" class="form-message"></div>
+                </form>
             </div>
         </div>
     </div>
-</head>
 
-<body>
+    <div id="register-modal" class="modal" style="display:none;">
+        <div class="modal-overlay" onclick="closeRegisterModal()">
+            <div class="modal-content" onclick="event.stopPropagation();">
+                <span class="modal-close" id="register-close" onclick="closeRegisterModal()">&times;</span>
+                <h2>Регистрация</h2>
+                <form id="register-form" onsubmit="return false;">
+                    <input type="email" id="register-email" placeholder="Email" autocomplete="email" required>
+                    <input type="password" id="register-password" placeholder="Пароль" autocomplete="new-password"
+                        required>
+                    <button type="submit" id="register-submit" class="btn-primary">Зарегистрироваться</button>
+                    <div id="register-message" class="form-message"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <div id="app">
         <aside id="sidebar-left">
             <h2>Компоненты</h2>
@@ -66,10 +73,9 @@
             </div>
 
             <h2>ИИ Эксперт</h2>
-            <div id="ai-status">Выберите компоненты для начала анализа сборки...</div>
+            <div id="ai-status">Выберите компоненты для начала анализа сборки</div>
             <div id="total-price">Итого: 0 ₽</div>
         </aside>
-
     </div>
 
     <div id="modal" class="hidden">
@@ -85,14 +91,14 @@
                 <select id="sort-select"
                     style="padding: 10px; background: #0a0b1e; border: 1px solid var(--accent-violet); color: white; border-radius: 6px; outline: none; cursor: pointer;">
                     <option value="default">Сортировка по умолчанию</option>
-                    <option value="price_asc">Сначала дешевые ↑</option>
-                    <option value="price_desc">Сначала дорогие ↓</option>
+                    <option value="price_asc">Сначала дешевые </option>
+                    <option value="price_desc">Сначала дорогие </option>
                 </select>
 
                 <div style="display: flex; flex-direction: column; gap: 4px; min-width: 150px;">
                     <span style="font-size: 0.8rem; color: var(--text-muted);">Макс. цена: <b id="price-slider-value"
-                            style="color: var(--accent-blue);">300 000 ₽</b></span>
-                    <input type="range" id="price-slider" min="1000" max="300000" step="500" value="300000"
+                            style="color: var(--accent-blue);">3 000 000 ₽</b></span>
+                    <input type="range" id="price-slider" min="1000" max="3000000" step="500" value="3000000"
                         style="cursor: pointer; accent-color: var(--accent-blue);">
                 </div>
             </div>
@@ -100,7 +106,6 @@
             <div id="products-list"></div>
         </div>
     </div>
-
 
     <script src="bundle.js"></script>
 </body>
