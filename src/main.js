@@ -11,86 +11,6 @@ function getActiveBuild() {
     return builds.find(b => b.id === activeBuildId) || null;
 }
 
-async function loadSavedBuilds() {
-    const token = sessionStorage.getItem('auth_token');
-    let loadedBuilds = [];
-
-    if (token) {
-        try {
-            const data = await apiRequest('/api/builds');
-            if (data && data.builds) {
-                loadedBuilds = data.builds;
-                loadedBuilds = loadedBuilds.map(b => {
-                    if (!b.name)
-                        b.name = 'Моя сборка';
-                    return b;
-                });
-                localStorage.setItem('cached_builds', JSON.stringify(loadedBuilds));
-                console.log('Загружены сборки с сервера:', loadedBuilds);
-            }
-        } catch (e) {
-            console.warn('Не удалось загрузить с сервера, берём из кэша', e);
-            const cached = localStorage.getItem('cached_builds');
-            if (cached) {
-                loadedBuilds = JSON.parse(cached);
-                loadedBuilds = loadedBuilds.map(b => {
-                    if (!b.name)
-                        b.name = 'Моя сборка';
-                    return b;
-                });
-            }
-        }
-    } else {
-        const guest = sessionStorage.getItem('guest_builds');
-        if (guest) {
-            loadedBuilds = JSON.parse(guest);
-            loadedBuilds = loadedBuilds.map(b => {
-                if (!b.name) b.name = 'Моя сборка';
-                return b;
-            });
-        }
-    }
-
-    if (loadedBuilds.length === 0) {
-        const defaultBuild = {
-            id: `build_${Date.now()}`,
-            name: 'Моя сборка',
-            components: {
-                case: null, motherboard: null, cpu: null, cooler: null,
-                ram: null, gpu: null, storage: null, psu: null, case_fans: null
-            },
-            createdAt: new Date().toISOString()
-        };
-        loadedBuilds = [defaultBuild];
-        if (token) {
-            try {
-                const newBuild = await apiRequest('/api/builds', {
-                    method: 'POST',
-                    body: JSON.stringify({ name: defaultBuild.name, components: defaultBuild.components })
-                });
-                if (newBuild && newBuild.build) {
-                    loadedBuilds[0] = newBuild.build;
-                    if (!loadedBuilds[0].name)
-                        loadedBuilds[0].name = 'Моя сборка';
-                }
-            } catch (e) {
-                console.warn('Не удалось создать дефолтную сборку на сервере', e);
-            }
-        }
-        localStorage.setItem('cached_builds', JSON.stringify(loadedBuilds));
-        if (!token)
-            sessionStorage.setItem('guest_builds', JSON.stringify(loadedBuilds));
-    }
-
-    builds = loadedBuilds;
-    activeBuildId = builds[0]?.id || null;
-    const savedId = localStorage.getItem('active_build_id');
-    if (savedId && builds.some(b => b.id === savedId)) {
-        activeBuildId = savedId;
-    }
-    applyActiveBuild();
-    updateAuthUI();
-}
 
 function applyActiveBuild() {
     let active = getActiveBuild();
@@ -163,19 +83,96 @@ function switchBuild(buildId) {
     applyActiveBuild();
 }
 
+async function loadSavedBuilds() {
+    const token = sessionStorage.getItem('auth_token');
+    let loadedBuilds = [];
+
+    if (token) {
+        try {
+            const data = await apiRequest('/api/builds');
+            if (data && data.builds) {
+                loadedBuilds = data.builds;
+                console.log('📡 Загружено с сервера:', loadedBuilds.map(b => ({ id: b.id, name: b.name })));
+            }
+        } catch (e) {
+            console.warn('Не удалось загрузить с сервера, берём из кэша', e);
+            const cached = localStorage.getItem('cached_builds');
+            if (cached) loadedBuilds = JSON.parse(cached);
+        }
+    } else {
+        const guest = sessionStorage.getItem('guest_builds');
+        if (guest) loadedBuilds = JSON.parse(guest);
+    }
+
+    let unnamedCount = 0;
+    loadedBuilds = loadedBuilds.map(b => {
+        if (!b.name) {
+            unnamedCount++;
+            b.name = `Сборка ${unnamedCount}`;
+        }
+        return b;
+    });
+
+    if (loadedBuilds.length === 0) {
+        const defaultBuild = {
+            id: `build_${Date.now()}`,
+            name: 'Моя сборка',
+            components: {
+                case: null, motherboard: null, cpu: null, cooler: null,
+                ram: null, gpu: null, storage: null, psu: null, case_fans: null
+            },
+            createdAt: new Date().toISOString()
+        };
+        loadedBuilds = [defaultBuild];
+        if (token) {
+            try {
+                const newBuild = await apiRequest('/api/builds', {
+                    method: 'POST',
+                    body: JSON.stringify({ name: defaultBuild.name, components: defaultBuild.components })
+                });
+                if (newBuild && newBuild.build) {
+                    loadedBuilds[0] = newBuild.build;
+                    if (!loadedBuilds[0].name) loadedBuilds[0].name = defaultBuild.name;
+                }
+            } catch (e) {
+                console.warn('Не удалось создать дефолтную сборку на сервере', e);
+            }
+        }
+    }
+
+    builds = loadedBuilds;
+    localStorage.setItem('cached_builds', JSON.stringify(builds));
+    if (!token) sessionStorage.setItem('guest_builds', JSON.stringify(builds));
+
+    activeBuildId = builds[0]?.id || null;
+    const savedId = localStorage.getItem('active_build_id');
+    if (savedId && builds.some(b => b.id === savedId)) {
+        activeBuildId = savedId;
+    }
+    applyActiveBuild();
+    updateAuthUI();
+}
+
 async function createBuild(name) {
+    if (!name || name.trim() === '') {
+        const count = builds.filter(b => b.name && b.name.startsWith('Сборка')).length;
+        name = `Сборка ${count + 1}`;
+    }
+
     const newBuild = {
         id: `build_${Date.now()}`,
-        name: name || 'Новая сборка',
+        name: name,
         components: {
             case: null, motherboard: null, cpu: null, cooler: null,
             ram: null, gpu: null, storage: null, psu: null, case_fans: null
         },
         createdAt: new Date().toISOString()
     };
+
     builds.push(newBuild);
     activeBuildId = newBuild.id;
     await saveBuildsToStorage();
+
     const token = sessionStorage.getItem('auth_token');
     if (token) {
         try {
@@ -186,15 +183,15 @@ async function createBuild(name) {
             if (result && result.build) {
                 const idx = builds.findIndex(b => b.id === newBuild.id);
                 builds[idx] = result.build;
-                activeBuildId = result.build.id;
-                if (!builds[idx].name)
-                    builds[idx].name = newBuild.name;
+                if (!builds[idx].name) builds[idx].name = newBuild.name;
+                activeBuildId = builds[idx].id;
                 await saveBuildsToStorage();
             }
         } catch (e) {
             console.warn('Не удалось создать сборку на сервере', e);
         }
     }
+
     applyActiveBuild();
     renderBuildSelector();
 }
